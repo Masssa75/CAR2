@@ -240,34 +240,10 @@ export async function POST(request: NextRequest) {
         manualWebsiteUrl = `https://${manualWebsiteUrl}`;
       }
 
-      // Test the URL and follow redirects to get the final URL (with timeout)
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-        const testResponse = await fetch(manualWebsiteUrl, {
-          method: 'HEAD',
-          redirect: 'follow',
-          signal: controller.signal
-        });
-
-        clearTimeout(timeout);
-
-        // Use the final URL after redirects
-        if (testResponse.ok || testResponse.status === 200 || testResponse.status === 301 || testResponse.status === 302) {
-          // Get the final URL after redirects
-          tokenData.website = testResponse.url || manualWebsiteUrl;
-          console.log(`URL normalized: ${manualWebsiteUrl} → ${tokenData.website}`);
-        } else {
-          console.warn(`URL test failed with status ${testResponse.status}, using as-is`);
-          tokenData.website = manualWebsiteUrl;
-        }
-      } catch (error: any) {
-        console.error('Error testing URL:', error.message);
-        // Use the URL as-is if test fails (timeout, network error, etc.)
-        tokenData.website = manualWebsiteUrl;
-        console.log(`Using manual URL as-is: ${manualWebsiteUrl}`);
-      }
+      // Skip URL testing in serverless environment - just use the URL as-is
+      // (URL testing with fetch() is unreliable in Netlify Functions due to timeouts)
+      tokenData.website = manualWebsiteUrl;
+      console.log(`Manual website URL set: ${manualWebsiteUrl}`);
     }
 
     // Process whitepaper URL if provided
