@@ -728,6 +728,9 @@ export default function HomePage() {
                   <WhitepaperTooltip
                     projectSymbol={project.symbol}
                     whitepaperTier={project.whitepaper_tier}
+                    whitepaperUrl={project.whitepaper_url}
+                    whitepaperStoryAnalysis={project.whitepaper_story_analysis}
+                    whitepaperPhase2Comparison={project.whitepaper_phase2_comparison}
                   >
                     <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
                       project.whitepaper_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
