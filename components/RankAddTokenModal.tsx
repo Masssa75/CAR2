@@ -368,6 +368,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
       setWarningMessage(null);
       setShowWebsiteInput(false);
       setPendingTokenData(null);
+      setIsSubmitting(false);
 
       // Show success message and close immediately
       const successMsg = data.message || `${data.symbol} added successfully! Analysis in progress...`;
@@ -389,7 +390,6 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
     } catch (err) {
       console.error('Error submitting token:', err);
       setError('Network error. Please try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };
