@@ -147,13 +147,19 @@ export function SignalBasedTooltip({
 
       const { data, error } = await supabase
         .from('crypto_projects_rated')
-        .select('website_stage1_analysis')
+        .select('website_stage1_analysis, website_stage1_tooltip')
         .eq('symbol', projectSymbol.toUpperCase())
         .single();
 
       if (!error && data) {
         setWebsiteAnalysis(data.website_stage1_analysis);
-        setBenchmarkComparison(data.website_stage1_analysis);
+        // The tooltip is stored separately in website_stage1_tooltip field
+        if (data.website_stage1_tooltip) {
+          setBenchmarkComparison(data.website_stage1_tooltip);
+        } else if (data.website_stage1_analysis) {
+          // Fallback: use the full analysis if tooltip field doesn't exist
+          setBenchmarkComparison(data.website_stage1_analysis);
+        }
       }
     } catch (error) {
       console.error('Error fetching website analysis:', error);
