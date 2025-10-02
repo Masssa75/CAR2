@@ -240,12 +240,18 @@ export async function POST(request: NextRequest) {
         manualWebsiteUrl = `https://${manualWebsiteUrl}`;
       }
 
-      // Test the URL and follow redirects to get the final URL
+      // Test the URL and follow redirects to get the final URL (with timeout)
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
         const testResponse = await fetch(manualWebsiteUrl, {
           method: 'HEAD',
-          redirect: 'follow'
+          redirect: 'follow',
+          signal: controller.signal
         });
+
+        clearTimeout(timeout);
 
         // Use the final URL after redirects
         if (testResponse.ok || testResponse.status === 200 || testResponse.status === 301 || testResponse.status === 302) {
@@ -256,10 +262,11 @@ export async function POST(request: NextRequest) {
           console.warn(`URL test failed with status ${testResponse.status}, using as-is`);
           tokenData.website = manualWebsiteUrl;
         }
-      } catch (error) {
-        console.error('Error testing URL:', error);
-        // Use the URL as-is if test fails
+      } catch (error: any) {
+        console.error('Error testing URL:', error.message);
+        // Use the URL as-is if test fails (timeout, network error, etc.)
         tokenData.website = manualWebsiteUrl;
+        console.log(`Using manual URL as-is: ${manualWebsiteUrl}`);
       }
     }
 
