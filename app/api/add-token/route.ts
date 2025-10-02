@@ -245,6 +245,7 @@ export async function POST(request: NextRequest) {
         name: coinGeckoData.name,
         website: websiteUrl || body.websiteUrl || coinGeckoData.website,
         liquidity: 1000000, // Native tokens don't need liquidity check
+        market_cap: coinGeckoData.market_cap, // Include market cap from CoinGecko
         isNative: true
       };
 
@@ -262,12 +263,26 @@ export async function POST(request: NextRequest) {
       // Check if we have CoinGecko data (symbol, name, website) - if so, skip DexScreener
       if (body.symbol && body.name && (websiteUrl || body.websiteUrl)) {
         console.log(`Using CoinGecko data for ${body.symbol} - skipping DexScreener validation`);
+
+        // Try to fetch market cap from CoinGecko for this token
+        let cgMarketCap = null;
+        try {
+          const cgData = await fetchNativeTokenFromCoinGecko(body.symbol.toLowerCase());
+          if (cgData?.market_cap) {
+            cgMarketCap = cgData.market_cap;
+            console.log(`Fetched market cap from CoinGecko: $${cgMarketCap.toLocaleString()}`);
+          }
+        } catch (error) {
+          console.log(`Could not fetch CoinGecko market cap for ${body.symbol}`);
+        }
+
         tokenData = {
           poolAddress: null,
           symbol: body.symbol,
           name: body.name,
           website: websiteUrl || body.websiteUrl,
           liquidity: 1000000, // Skip liquidity check for CoinGecko tokens
+          market_cap: cgMarketCap, // Include market cap if found
           isNative: false
         };
       } else {
@@ -361,7 +376,8 @@ export async function POST(request: NextRequest) {
         whitepaper_url: normalizedWhitepaperUrl,
         whitepaper_content: processedWhitepaperContent,
         source: 'manual',
-        trigger_analysis: !!tokenData.website // Only trigger if we have a website
+        trigger_analysis: !!tokenData.website, // Only trigger if we have a website
+        market_cap: tokenData.market_cap // Pass CoinGecko market cap if available
       })
     });
 
