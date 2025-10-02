@@ -50,6 +50,7 @@ interface TokenResponse {
 export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalProps) {
   const [contractAddress, setContractAddress] = useState('');
   const [network, setNetwork] = useState<NetworkKey>('ethereum');
+  const [isNativeToken, setIsNativeToken] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
