@@ -946,9 +946,9 @@ export function SignalBasedTooltip({
                 <ul className="space-y-1">
                   {mainConcerns.slice(0, 3).map((concern, idx) => (
                     <li key={idx} className="text-xs flex items-start">
-                      <span className="text-[#666] mr-2">•</span>
+                      <span className="text-gray-400 mr-2">•</span>
                       <div className="flex-1">
-                        <span className="text-[#ddd]">{concern}</span>
+                        <span className="text-gray-600">{concern}</span>
                       </div>
                     </li>
                   ))}
