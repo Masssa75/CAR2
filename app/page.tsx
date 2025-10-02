@@ -55,7 +55,7 @@ export default function HomePage() {
     tokenType: 'all',
     websiteTiers: [],
     whitepaperTiers: ['ALPHA'], // Default: Show only ALPHA whitepapers
-    maxAge: '', // No age filter by default (many top projects have NULL ages)
+    maxAge: '5', // Default: Show projects 5 years or younger (fresh gems)
     maxMcap: ''
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
