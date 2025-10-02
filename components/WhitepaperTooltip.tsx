@@ -31,6 +31,7 @@ interface WhitepaperTooltipProps {
     reasoning?: string;
     tier_name?: string;
     quality_score?: number;
+    explanation?: string;
   };
   whitepaperAnalyzedAt?: string;
   children: React.ReactNode;
@@ -226,6 +227,13 @@ export function WhitepaperTooltip({
             <div className="text-sm text-gray-600 leading-relaxed">
               {whitepaperStoryAnalysis.simple_description}
             </div>
+
+            {/* Tier Explanation - second paragraph */}
+            {whitepaperPhase2Comparison?.explanation && (
+              <div className="text-sm text-gray-600 leading-relaxed mt-3">
+                {whitepaperPhase2Comparison.explanation}
+              </div>
+            )}
           </div>
         )}
 
