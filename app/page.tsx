@@ -112,6 +112,7 @@ export default function HomePage() {
     try {
       if (reset) {
         setLoading(true);
+        setProjects([]); // Clear old projects immediately to prevent visual glitch
       } else {
         setLoadingMore(true);
       }
@@ -683,6 +684,10 @@ export default function HomePage() {
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-400">Loading projects...</div>
+        </div>
+      ) : sortedProjects.length === 0 ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-400">No projects found</div>
         </div>
       ) : (
         <div>
