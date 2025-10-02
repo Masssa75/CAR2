@@ -956,17 +956,7 @@ export function SignalBasedTooltip({
               </div>
             )}
 
-            {/* Technical Assessment - Available to all users */}
-            {(technicalAssessment || websiteAnalysis?.technical_assessment) && (
-              <div className="mt-3 pt-3 border-t border-[#2a2d31]">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[#666] text-xs font-bold">TECHNICAL ASSESSMENT</span>
-                </div>
-                <div className="text-[11px] text-[#aaa] leading-relaxed">
-                  {technicalAssessment || websiteAnalysis?.technical_assessment}
-                </div>
-              </div>
-            )}
+            {/* Technical Assessment - Hidden */}
 
             {/* Arrow pointing to element */}
             <div className={`absolute left-1/2 transform -translate-x-1/2 w-0 h-0 ${
