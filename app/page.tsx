@@ -10,9 +10,5 @@ export default function HomePage() {
     router.replace('/rank');
   }, [router]);
 
-  return (
-    <div className="min-h-screen bg-[#0a0b0d] flex items-center justify-center">
-      <div className="text-white">Redirecting to /rank...</div>
-    </div>
-  );
+  return null;
 }

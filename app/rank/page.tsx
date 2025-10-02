@@ -11,8 +11,8 @@ import { RankAddTokenModal } from '@/components/RankAddTokenModal';
 import RankSearchInput from '@/components/rank/RankSearchInput';
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://czllxavktwyqecjxhiao.supabase.co',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6bGx4YXZrdHd5cWVjanhoaWFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNzUzNjUsImV4cCI6MjA3NDk1MTM2NX0.qKp_cMN_AC6wGRzPejda0FkU10tP5zC1LcBRUJoEZp4'
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 interface Project {
