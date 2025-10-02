@@ -22,6 +22,7 @@ interface Project {
   current_market_cap: number | null;
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
+  token_type: 'meme' | 'utility' | null;
 }
 
 interface FilterState {
@@ -134,10 +135,10 @@ export default function HomePage() {
       }
     }
 
-    // Token type filter (placeholder - would need token_type field in API)
-    // if (filters.tokenType !== 'all') {
-    //   if (project.token_type !== filters.tokenType) return false;
-    // }
+    // Token type filter
+    if (filters.tokenType !== 'all') {
+      if (project.token_type !== filters.tokenType) return false;
+    }
 
     // Website tier filter
     if (filters.websiteTiers.length > 0) {
