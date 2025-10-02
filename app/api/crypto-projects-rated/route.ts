@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
     const maxAge = searchParams.get('maxAge') ? parseFloat(searchParams.get('maxAge')!) : undefined;
     const minMarketCap = searchParams.get('minMarketCap') ? parseFloat(searchParams.get('minMarketCap')!) : undefined;
     const maxMarketCap = searchParams.get('maxMarketCap') ? parseFloat(searchParams.get('maxMarketCap')!) : undefined;
+    const websiteTiers = searchParams.get('websiteTiers'); // Comma-separated list
+    const whitepaperTiers = searchParams.get('whitepaperTiers'); // Comma-separated list
     const projectId = searchParams.get('id'); // Add support for specific project ID
     
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -161,7 +163,23 @@ export async function GET(request: NextRequest) {
     if (maxMarketCap !== undefined && maxMarketCap > 0) {
       query = query.lte('current_market_cap', maxMarketCap);
     }
-    
+
+    // Apply website tier filters
+    if (websiteTiers) {
+      const tierList = websiteTiers.split(',').filter(t => t.trim());
+      if (tierList.length > 0) {
+        query = query.in('website_stage1_tier', tierList);
+      }
+    }
+
+    // Apply whitepaper tier filters
+    if (whitepaperTiers) {
+      const tierList = whitepaperTiers.split(',').filter(t => t.trim());
+      if (tierList.length > 0) {
+        query = query.in('whitepaper_tier', tierList);
+      }
+    }
+
     // Apply sorting
     const validSortColumns = [
       'website_stage1_score',

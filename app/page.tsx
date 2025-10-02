@@ -54,8 +54,8 @@ export default function HomePage() {
   const [filters, setFilters] = useState<FilterState>({
     tokenType: 'all',
     websiteTiers: [],
-    whitepaperTiers: [],
-    maxAge: '',
+    whitepaperTiers: ['ALPHA'], // Default: Show only ALPHA whitepapers
+    maxAge: '4', // Default: Show only projects 4 years or younger
     maxMcap: ''
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -82,6 +82,11 @@ export default function HomePage() {
     };
   }, [searchQuery]);
 
+  // Refetch when filters change
+  useEffect(() => {
+    fetchProjects(1, true);
+  }, [filters]);
+
   async function fetchProjects(pageNum: number, reset: boolean = false) {
     try {
       if (reset) {
@@ -90,8 +95,60 @@ export default function HomePage() {
         setLoadingMore(true);
       }
 
-      const searchParam = searchQuery.trim() ? `&search=${encodeURIComponent(searchQuery)}` : '';
-      const response = await fetch(`/api/crypto-projects-rated?page=${pageNum}&limit=50&sortBy=current_market_cap&sortOrder=desc&includeUnverified=true${searchParam}`);
+      // Build query params
+      const params = new URLSearchParams({
+        page: pageNum.toString(),
+        limit: '50',
+        sortBy: 'current_market_cap',
+        sortOrder: 'desc',
+        includeUnverified: 'true'
+      });
+
+      // Add search
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery);
+      }
+
+      // Add filters
+      if (filters.tokenType !== 'all') {
+        params.append('tokenType', filters.tokenType);
+      }
+
+      if (filters.websiteTiers.length > 0) {
+        params.append('websiteTiers', filters.websiteTiers.join(','));
+      }
+
+      if (filters.whitepaperTiers.length > 0) {
+        params.append('whitepaperTiers', filters.whitepaperTiers.join(','));
+      }
+
+      if (filters.maxAge) {
+        const maxAgeValue = parseFloat(filters.maxAge);
+        if (!isNaN(maxAgeValue)) {
+          params.append('maxAge', maxAgeValue.toString());
+        }
+      }
+
+      if (filters.maxMcap) {
+        const input = filters.maxMcap.toUpperCase().replace(/[$,]/g, '');
+        let maxMcapValue = 0;
+
+        if (input.endsWith('K')) {
+          maxMcapValue = parseFloat(input.slice(0, -1)) * 1000;
+        } else if (input.endsWith('M')) {
+          maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000;
+        } else if (input.endsWith('B')) {
+          maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000000;
+        } else {
+          maxMcapValue = parseFloat(input);
+        }
+
+        if (!isNaN(maxMcapValue) && maxMcapValue > 0) {
+          params.append('maxMarketCap', maxMcapValue.toString());
+        }
+      }
+
+      const response = await fetch(`/api/crypto-projects-rated?${params}`);
       const json = await response.json();
 
       if (json.error) throw new Error(json.error);
@@ -187,62 +244,21 @@ export default function HomePage() {
     setHotPicksActive(!hotPicksActive);
   }
 
-  const filteredProjects = projects.filter((project) => {
-    // Search is now handled server-side, so removed from here
+  // Count active filters
+  function getActiveFilterCount() {
+    let count = 0;
+    if (filters.tokenType !== 'all') count++;
+    if (filters.websiteTiers.length > 0) count++;
+    if (filters.whitepaperTiers.length > 0) count++;
+    if (filters.maxAge) count++;
+    if (filters.maxMcap) count++;
+    return count;
+  }
 
-    // Token type filter
-    if (filters.tokenType !== 'all') {
-      if (project.token_type !== filters.tokenType) return false;
-    }
+  const activeFilterCount = getActiveFilterCount();
 
-    // Website tier filter
-    if (filters.websiteTiers.length > 0) {
-      if (!project.website_stage1_tier || !filters.websiteTiers.includes(project.website_stage1_tier)) {
-        return false;
-      }
-    }
-
-    // Whitepaper tier filter
-    if (filters.whitepaperTiers.length > 0) {
-      if (!project.whitepaper_tier || !filters.whitepaperTiers.includes(project.whitepaper_tier)) {
-        return false;
-      }
-    }
-
-    // Max age filter
-    if (filters.maxAge) {
-      const maxAgeValue = parseFloat(filters.maxAge.replace(/[^0-9.]/g, ''));
-      if (!isNaN(maxAgeValue) && project.project_age_years) {
-        if (project.project_age_years > maxAgeValue) {
-          return false;
-        }
-      }
-    }
-
-    // Max market cap filter
-    if (filters.maxMcap) {
-      const input = filters.maxMcap.toUpperCase().replace(/[$,]/g, '');
-      let maxMcapValue = 0;
-
-      if (input.endsWith('K')) {
-        maxMcapValue = parseFloat(input.slice(0, -1)) * 1000;
-      } else if (input.endsWith('M')) {
-        maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000;
-      } else if (input.endsWith('B')) {
-        maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000000;
-      } else {
-        maxMcapValue = parseFloat(input);
-      }
-
-      if (!isNaN(maxMcapValue) && project.current_market_cap) {
-        if (project.current_market_cap > maxMcapValue) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  });
+  // All filtering now happens server-side - projects are already filtered
+  const filteredProjects = projects;
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (hotPicksActive) {
@@ -299,9 +315,14 @@ export default function HomePage() {
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
+              className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 relative"
             >
-              <Filter className="w-5 h-5 text-gray-600" />
+              <Filter className={`w-5 h-5 ${activeFilterCount > 0 ? 'text-emerald-500' : 'text-gray-600'}`} />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setShowMenu(!showMenu)}
