@@ -88,10 +88,11 @@ export async function POST(request: NextRequest) {
     // A token is native if:
     // 1. It has no platforms at all
     // 2. It only has its own chain as a platform (e.g., RON only on "ronin" chain)
+    // 3. It has an empty string as platform key (CoinGecko's way of indicating native)
     const platformKeys = Object.keys(platforms);
     const isNativeToken = !platforms ||
                          platformKeys.length === 0 ||
-                         (platformKeys.length === 1 && platformKeys[0] === data.id);
+                         (platformKeys.length === 1 && (platformKeys[0] === data.id || platformKeys[0] === ''));
 
     return NextResponse.json({
       id: data.id,
