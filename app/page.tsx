@@ -55,7 +55,7 @@ export default function HomePage() {
     tokenType: 'all',
     websiteTiers: [],
     whitepaperTiers: ['ALPHA'], // Default: Show only ALPHA whitepapers
-    maxAge: '4', // Default: Show only projects 4 years or younger
+    maxAge: '', // No age filter by default (many top projects have NULL ages)
     maxMcap: ''
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
