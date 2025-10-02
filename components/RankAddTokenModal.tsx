@@ -743,21 +743,60 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
             </select>
           </div>
 
+          {/* Token Type Selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Token Type
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  checked={!isNativeToken}
+                  onChange={() => {
+                    setIsNativeToken(false);
+                    setContractAddress('');
+                  }}
+                  className="mr-2"
+                />
+                <span className="text-sm text-gray-700">Smart Contract Token</span>
+              </label>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  checked={isNativeToken}
+                  onChange={() => {
+                    setIsNativeToken(true);
+                    setContractAddress('native:');
+                    setShowWebsiteInput(true); // Native tokens require website
+                  }}
+                  className="mr-2"
+                />
+                <span className="text-sm text-gray-700">Layer 1 Native Token</span>
+              </label>
+            </div>
+          </div>
+
           {/* Contract Address */}
           <div>
             <label htmlFor="contractAddress" className="block text-sm font-medium text-gray-700 mb-1">
-              Contract Address
+              {isNativeToken ? 'CoinGecko ID (with native: prefix)' : 'Contract Address'}
             </label>
             <input
               id="contractAddress"
               type="text"
               value={contractAddress}
               onChange={(e) => setContractAddress(e.target.value)}
-              placeholder={network === 'solana' ? 'Enter Solana token address...' : '0x...'}
+              placeholder={isNativeToken ? 'native:bittensor-token' : (network === 'solana' ? 'Enter Solana token address...' : '0x...')}
               className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500"
               disabled={isSubmitting}
               required
             />
+            {isNativeToken && (
+              <p className="mt-1 text-xs text-gray-500">
+                Format: native:coingecko-id (e.g., native:bittensor-token for Bittensor)
+              </p>
+            )}
           </div>
             </>
           )}
