@@ -704,6 +704,7 @@ export default function HomePage() {
                     projectSymbol={project.symbol}
                     signals={project.website_stage1_analysis?.signals_found}
                     redFlags={project.website_stage1_analysis?.red_flags}
+                    websiteAnalysis={project.website_stage1_analysis}
                     isAdmin={false}
                   >
                     <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
