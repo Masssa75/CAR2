@@ -419,7 +419,7 @@ export default function HomePage() {
         )}
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 flex flex-col">
           {/* Mobile Filter Panel (top dropdown) */}
           {showFilters && (
             <div className="md:hidden bg-white border-b border-gray-200 px-5 py-5">
@@ -558,22 +558,24 @@ export default function HomePage() {
             </div>
           )}
 
-      {/* List Header */}
-      <div className="sticky top-0 z-20 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
-        <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
-          Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
-        </div>
-        <div onClick={() => handleSort('project_age_years')} className="cursor-pointer flex items-center gap-1">
-          Age {sortColumn === 'project_age_years' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
-        </div>
-        <div onClick={() => handleSort('current_market_cap')} className="cursor-pointer flex items-center gap-1">
-          MCap {!hotPicksActive && sortColumn === 'current_market_cap' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
-        </div>
-        <div className="text-center">Web</div>
-        <div className="text-center">WP</div>
-      </div>
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            {/* List Header */}
+            <div className="sticky top-0 z-10 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
+                Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
+              </div>
+              <div onClick={() => handleSort('project_age_years')} className="cursor-pointer flex items-center gap-1">
+                Age {sortColumn === 'project_age_years' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
+              </div>
+              <div onClick={() => handleSort('current_market_cap')} className="cursor-pointer flex items-center gap-1">
+                MCap {!hotPicksActive && sortColumn === 'current_market_cap' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
+              </div>
+              <div className="text-center">Web</div>
+              <div className="text-center">WP</div>
+            </div>
 
-      {/* Projects List */}
+            {/* Projects List */}
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-400">Loading projects...</div>
@@ -630,7 +632,7 @@ export default function HomePage() {
           ))}
         </div>
       )}
-
+          </div>
         </div>
       </div>
 
