@@ -15,6 +15,21 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+interface Signal {
+  signal: string;
+  importance?: string;
+  rarity_estimate?: string;
+  strength_score: number;
+  score_reasoning?: string;
+  similar_to?: string;
+}
+
+interface RedFlag {
+  flag: string;
+  severity: 'high' | 'medium' | 'low';
+  evidence?: string;
+}
+
 interface Project {
   symbol: string;
   name: string;
@@ -23,6 +38,8 @@ interface Project {
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
+  signals_found?: Signal[];
+  red_flags?: RedFlag[];
 }
 
 interface FilterState {
