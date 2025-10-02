@@ -52,6 +52,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
   const [network, setNetwork] = useState<NetworkKey>('ethereum');
   const [isNativeToken, setIsNativeToken] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
@@ -227,8 +228,14 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
   }, [searchTokens]);
 
   // Fetch detailed token information
-  const fetchTokenDetails = useCallback(async (coinId: string) => {
-    setIsSubmitting(true);
+  const fetchTokenDetails = useCallback(async (coinId: string, fromAutoFetch = false) => {
+    // Use isFetchingDetails for auto-fetch, isSubmitting for manual search
+    if (fromAutoFetch) {
+      setIsFetchingDetails(true);
+    } else {
+      setIsSubmitting(true);
+    }
+
     try {
       const response = await fetch('/api/search-tokens', {
         method: 'POST',
@@ -242,7 +249,10 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
 
         // If it's a native token, set the contract address to native:coingecko_id
         if (details.isNativeToken) {
-          setContractAddress(`native:${details.id}`);
+          // Only update contract address if not from auto-fetch (to avoid overwriting user input)
+          if (!fromAutoFetch) {
+            setContractAddress(`native:${details.id}`);
+          }
           setNetwork('other' as NetworkKey); // Native tokens use 'other' network
           setIsNativeToken(true); // Set native token flag
         } else {
@@ -287,16 +297,30 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
           setShowAdvanced(true); // Show advanced section if we have a whitepaper
         }
 
-        // Close search mode
-        setSearchMode(false);
-        setSearchQuery('');
-        setSearchResults([]);
+        // Close search mode (only if not from auto-fetch)
+        if (!fromAutoFetch) {
+          setSearchMode(false);
+          setSearchQuery('');
+          setSearchResults([]);
+        }
+      } else {
+        // Only show error if not from auto-fetch
+        if (!fromAutoFetch) {
+          setError('Failed to fetch token details');
+        }
       }
     } catch (error) {
       console.error('Error fetching token details:', error);
-      setError('Failed to fetch token details');
+      // Only show error if not from auto-fetch
+      if (!fromAutoFetch) {
+        setError('Failed to fetch token details');
+      }
     } finally {
-      setIsSubmitting(false);
+      if (fromAutoFetch) {
+        setIsFetchingDetails(false);
+      } else {
+        setIsSubmitting(false);
+      }
     }
   }, []);
 
@@ -315,7 +339,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
 
       // Debounce the fetch
       searchTimeoutRef.current = setTimeout(() => {
-        fetchTokenDetails(coinId);
+        fetchTokenDetails(coinId, true); // Pass true for fromAutoFetch
       }, 500);
     }
   }, [fetchTokenDetails]);
