@@ -139,12 +139,7 @@ export async function GET(request: NextRequest) {
     if (tokenType && tokenType !== 'all') {
       query = query.eq('token_type', tokenType);
     }
-    
-    // Apply imposter filter - DISABLED for CAR2 (column doesn't exist yet)
-    // if (!includeImposters) {
-    //   query = query.or('is_imposter.eq.false,is_imposter.is.null');
-    // }
-    
+
     // Apply verified filter - by default exclude unverified tokens
     if (!includeUnverified) {
       // Only show tokens where contract_verification.found_on_site is true
