@@ -81,7 +81,6 @@ export async function GET(request: NextRequest) {
       initial_liquidity_usd,
       initial_market_cap,
       one_liner,
-      strongest_signal,
       token_type,
       is_imposter,
       is_dead,
