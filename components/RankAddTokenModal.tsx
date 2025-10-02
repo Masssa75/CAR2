@@ -312,9 +312,9 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
         network: pendingTokenData?.network || network
       };
 
-      // Include website URL if provided
-      if (websiteUrl) {
-        payload.websiteUrl = websiteUrl;
+      // Include website URL if provided (either from parameter or state)
+      if (websiteUrl || manualWebsiteUrl.trim()) {
+        payload.websiteUrl = websiteUrl || manualWebsiteUrl.trim();
       }
 
       // Include whitepaper URL if provided
