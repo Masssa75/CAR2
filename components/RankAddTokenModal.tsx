@@ -339,28 +339,8 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
 
       if (!response.ok) {
         if (response.status === 409) {
-          // Token already exists - but we can still show progress if analysis is ongoing
-          if (data.tokenId && data.symbol) {
-            console.log('Token exists but has tokenId - showing progress tracker');
-            setError(null);
-            setSuccessMessage(null);
-            setWarningMessage(null);
-            setShowWebsiteInput(false);
-            setPendingTokenData(null);
-            
-            // Start progress tracking for existing token
-            startProgressTracking(
-              data.tokenId,
-              data.symbol,
-              contractAddress.trim(),
-              network
-            );
-            setIsSubmitting(false);
-            return;
-          } else {
-            // No tokenId provided, show error
-            setError(`Token already exists (${data.symbol || 'Unknown'})`);
-          }
+          // Token already exists
+          setError(data.error || `Token already exists (${data.symbol || 'Unknown'})`);
         } else if (response.status === 429) {
           // Rate limited
           setError('Too many requests. Please try again later.');
@@ -383,38 +363,28 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
         return;
       }
 
-      // Success - token was added, start progress tracking
-      if (data.tokenId && data.symbol) {
-        setError(null);
-        setSuccessMessage(null);
-        setWarningMessage(null);
-        setShowWebsiteInput(false);
-        setPendingTokenData(null);
-        
-        // Start progress tracking instead of closing modal
-        startProgressTracking(
-          data.tokenId,
-          data.symbol,
-          contractAddress.trim(),
-          network
-        );
-      } else {
-        // Fallback to old behavior if no projectId
-        const successMsg = data.message || `Token ${data.symbol} added successfully!`;
-        setSuccessMessage(successMsg);
-        setContractAddress('');
-        setManualWebsiteUrl('');
-        setShowWebsiteInput(false);
-        setPendingTokenData(null);
-        setShowAdvanced(false);
-        setWhitepaperUrl('');
-        setWhitepaperContent('');
-        
-        setTimeout(() => {
-          handleClose();
-          if (onSuccess) onSuccess();
-        }, 2000);
-      }
+      // Success - token was added
+      setError(null);
+      setWarningMessage(null);
+      setShowWebsiteInput(false);
+      setPendingTokenData(null);
+
+      // Show success message and close immediately
+      const successMsg = data.message || `${data.symbol} added successfully! Analysis in progress...`;
+      setSuccessMessage(successMsg);
+
+      // Reset form
+      setContractAddress('');
+      setManualWebsiteUrl('');
+      setShowAdvanced(false);
+      setWhitepaperUrl('');
+      setWhitepaperContent('');
+
+      // Close after brief delay to show success message
+      setTimeout(() => {
+        handleClose();
+        if (onSuccess) onSuccess();
+      }, 1500);
 
     } catch (err) {
       console.error('Error submitting token:', err);
