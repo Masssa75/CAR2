@@ -153,7 +153,8 @@ export async function GET(request: NextRequest) {
       query = query.gte('project_age_years', minAge);
     }
     if (maxAge !== undefined && maxAge < 10) {
-      query = query.lte('project_age_years', maxAge);
+      // Include NULL ages (established projects without age data)
+      query = query.or(`project_age_years.lte.${maxAge},project_age_years.is.null`);
     }
 
     // Apply market cap filters
