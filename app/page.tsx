@@ -38,8 +38,14 @@ interface Project {
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
-  signals_found?: Signal[];
-  red_flags?: RedFlag[];
+  signals_found?: Signal[];  // Top-level (old data)
+  red_flags?: RedFlag[];     // Top-level (old data)
+  website_stage1_analysis?: {  // Nested (new data, matches old CAR)
+    signals_found?: Signal[];
+    red_flags?: RedFlag[];
+    project_description?: string;
+    [key: string]: any;
+  };
 }
 
 interface FilterState {
@@ -698,8 +704,8 @@ export default function HomePage() {
                 {project.website_stage1_tier && (
                   <SignalBasedTooltip
                     projectSymbol={project.symbol}
-                    signals={project.signals_found}
-                    redFlags={project.red_flags}
+                    signals={project.website_stage1_analysis?.signals_found || project.signals_found}
+                    redFlags={project.website_stage1_analysis?.red_flags || project.red_flags}
                     isAdmin={false}
                   >
                     <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
