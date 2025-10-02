@@ -24,6 +24,14 @@ interface Project {
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
 }
 
+interface FilterState {
+  tokenType: 'all' | 'utility' | 'meme';
+  websiteTiers: string[];
+  whitepaperTiers: string[];
+  maxAge: string;
+  maxMcap: string;
+}
+
 type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier';
 type SortDirection = 'asc' | 'desc';
 
@@ -38,6 +46,13 @@ export default function HomePage() {
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<FilterState>({
+    tokenType: 'all',
+    websiteTiers: [],
+    whitepaperTiers: [],
+    maxAge: '',
+    maxMcap: ''
+  });
 
   useEffect(() => {
     fetchProjects();
@@ -108,13 +123,69 @@ export default function HomePage() {
   }
 
   const filteredProjects = projects.filter((project) => {
-    if (!searchQuery.trim()) return true;
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const symbol = project.symbol?.toLowerCase() || '';
+      const name = project.name?.toLowerCase() || '';
 
-    const query = searchQuery.toLowerCase();
-    const symbol = project.symbol?.toLowerCase() || '';
-    const name = project.name?.toLowerCase() || '';
+      if (!symbol.includes(query) && !name.includes(query)) {
+        return false;
+      }
+    }
 
-    return symbol.includes(query) || name.includes(query);
+    // Token type filter (placeholder - would need token_type field in API)
+    // if (filters.tokenType !== 'all') {
+    //   if (project.token_type !== filters.tokenType) return false;
+    // }
+
+    // Website tier filter
+    if (filters.websiteTiers.length > 0) {
+      if (!project.website_stage1_tier || !filters.websiteTiers.includes(project.website_stage1_tier)) {
+        return false;
+      }
+    }
+
+    // Whitepaper tier filter
+    if (filters.whitepaperTiers.length > 0) {
+      if (!project.whitepaper_tier || !filters.whitepaperTiers.includes(project.whitepaper_tier)) {
+        return false;
+      }
+    }
+
+    // Max age filter
+    if (filters.maxAge) {
+      const maxAgeValue = parseFloat(filters.maxAge.replace(/[^0-9.]/g, ''));
+      if (!isNaN(maxAgeValue) && project.project_age_years) {
+        if (project.project_age_years > maxAgeValue) {
+          return false;
+        }
+      }
+    }
+
+    // Max market cap filter
+    if (filters.maxMcap) {
+      const input = filters.maxMcap.toUpperCase().replace(/[$,]/g, '');
+      let maxMcapValue = 0;
+
+      if (input.endsWith('K')) {
+        maxMcapValue = parseFloat(input.slice(0, -1)) * 1000;
+      } else if (input.endsWith('M')) {
+        maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000;
+      } else if (input.endsWith('B')) {
+        maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000000;
+      } else {
+        maxMcapValue = parseFloat(input);
+      }
+
+      if (!isNaN(maxMcapValue) && project.current_market_cap) {
+        if (project.current_market_cap > maxMcapValue) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   });
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -204,6 +275,145 @@ export default function HomePage() {
           </>
         )}
       </div>
+
+      {/* Filter Panel */}
+      {showFilters && (
+        <div className="bg-white border-b border-gray-200 px-5 py-5">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-base font-bold text-gray-900">Filters</h3>
+            <button
+              onClick={() => {
+                // Reset all filters
+                setFilters({
+                  tokenType: 'all',
+                  websiteTiers: [],
+                  whitepaperTiers: [],
+                  maxAge: '',
+                  maxMcap: ''
+                });
+              }}
+              className="text-sm text-emerald-500 font-semibold"
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Token Type */}
+          <div className="mb-4">
+            <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Token Type</div>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setFilters(prev => ({ ...prev, tokenType: 'all' }))}
+                className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  filters.tokenType === 'all'
+                    ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                    : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilters(prev => ({ ...prev, tokenType: 'utility' }))}
+                className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  filters.tokenType === 'utility'
+                    ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                    : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                }`}
+              >
+                Utility
+              </button>
+              <button
+                onClick={() => setFilters(prev => ({ ...prev, tokenType: 'meme' }))}
+                className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  filters.tokenType === 'meme'
+                    ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                    : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                }`}
+              >
+                Meme
+              </button>
+            </div>
+          </div>
+
+          {/* Website Tier */}
+          <div className="mb-4">
+            <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Website Tier</div>
+            <div className="flex gap-2 flex-wrap">
+              {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
+                <button
+                  key={tier}
+                  onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      websiteTiers: prev.websiteTiers.includes(tier)
+                        ? prev.websiteTiers.filter(t => t !== tier)
+                        : [...prev.websiteTiers, tier]
+                    }));
+                  }}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    filters.websiteTiers.includes(tier)
+                      ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                      : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                  }`}
+                >
+                  {tier}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Whitepaper Tier */}
+          <div className="mb-4">
+            <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Whitepaper Tier</div>
+            <div className="flex gap-2 flex-wrap">
+              {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
+                <button
+                  key={tier}
+                  onClick={() => {
+                    setFilters(prev => ({
+                      ...prev,
+                      whitepaperTiers: prev.whitepaperTiers.includes(tier)
+                        ? prev.whitepaperTiers.filter(t => t !== tier)
+                        : [...prev.whitepaperTiers, tier]
+                    }));
+                  }}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    filters.whitepaperTiers.includes(tier)
+                      ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                      : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                  }`}
+                >
+                  {tier}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Max Age and Max MCap */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max Age</div>
+              <input
+                type="text"
+                placeholder="e.g. 2y"
+                value={filters.maxAge}
+                onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
+                className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+              />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max MCap</div>
+              <input
+                type="text"
+                placeholder="e.g. $1B"
+                value={filters.maxMcap}
+                onChange={(e) => setFilters(prev => ({ ...prev, maxMcap: e.target.value }))}
+                className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* List Header */}
       <div className="sticky top-14 z-10 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
