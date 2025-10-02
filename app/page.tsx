@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { Zap, Filter, Menu, Plus } from 'lucide-react';
@@ -40,13 +40,17 @@ export default function HomePage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>('current_market_cap');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [showFilters, setShowFilters] = useState(true); // Open by default on desktop
+  const [showFilters, setShowFilters] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     tokenType: 'all',
     websiteTiers: [],
@@ -54,24 +58,84 @@ export default function HomePage() {
     maxAge: '',
     maxMcap: ''
   });
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetchProjects();
+    fetchProjects(1, true);
   }, []);
 
-  async function fetchProjects() {
+  // Handle search with debounce
+  useEffect(() => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      fetchProjects(1, true);
+    }, 300);
+
+    setSearchTimeout(timeout);
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [searchQuery]);
+
+  async function fetchProjects(pageNum: number, reset: boolean = false) {
     try {
-      const response = await fetch('/api/crypto-projects-rated?limit=500&sortBy=current_market_cap&sortOrder=desc&includeUnverified=true');
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const searchParam = searchQuery.trim() ? `&search=${encodeURIComponent(searchQuery)}` : '';
+      const response = await fetch(`/api/crypto-projects-rated?page=${pageNum}&limit=50&sortBy=current_market_cap&sortOrder=desc&includeUnverified=true${searchParam}`);
       const json = await response.json();
 
       if (json.error) throw new Error(json.error);
-      setProjects(json.data || []);
+
+      const newProjects = json.data || [];
+
+      if (reset) {
+        setProjects(newProjects);
+      } else {
+        setProjects(prev => [...prev, ...newProjects]);
+      }
+
+      setHasMore(json.pagination?.hasMore || false);
+      setPage(pageNum);
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+        fetchProjects(page + 1, false);
+      }
+    });
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadingMore, loading, page]);
 
   function handleSort(column: SortColumn) {
     if (sortColumn === column) {
@@ -124,16 +188,7 @@ export default function HomePage() {
   }
 
   const filteredProjects = projects.filter((project) => {
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      const symbol = project.symbol?.toLowerCase() || '';
-      const name = project.name?.toLowerCase() || '';
-
-      if (!symbol.includes(query) && !name.includes(query)) {
-        return false;
-      }
-    }
+    // Search is now handled server-side, so removed from here
 
     // Token type filter
     if (filters.tokenType !== 'all') {
@@ -630,6 +685,24 @@ export default function HomePage() {
               </div>
             </div>
           ))}
+
+          {/* Infinite Scroll Trigger */}
+          {hasMore && (
+            <div ref={loadMoreRef} className="flex items-center justify-center py-8">
+              {loadingMore ? (
+                <div className="text-gray-400">Loading more...</div>
+              ) : (
+                <div className="h-4"></div>
+              )}
+            </div>
+          )}
+
+          {/* End of results message */}
+          {!hasMore && sortedProjects.length > 0 && (
+            <div className="flex items-center justify-center py-8 text-gray-400 text-sm">
+              End of results
+            </div>
+          )}
         </div>
       )}
           </div>
@@ -641,7 +714,7 @@ export default function HomePage() {
         isOpen={showAddTokenModal}
         onClose={() => setShowAddTokenModal(false)}
         onSuccess={() => {
-          fetchProjects();
+          fetchProjects(1, true);
         }}
       />
     </div>
