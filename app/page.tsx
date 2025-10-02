@@ -8,6 +8,8 @@ import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
 import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
+import { ProjectActionMenu } from '@/components/ProjectActionMenu';
+import { AddWhitepaperModal } from '@/components/AddWhitepaperModal';
 import RankSearchInput from '@/components/rank/RankSearchInput';
 
 const supabase = createClient(
@@ -73,6 +75,8 @@ export default function HomePage() {
   const [showMenu, setShowMenu] = useState(false);
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
+  const [showAddWhitepaperModal, setShowAddWhitepaperModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<{ symbol: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [filters, setFilters] = useState<FilterState>({
@@ -672,7 +676,7 @@ export default function HomePage() {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header */}
-            <div className="sticky top-0 z-10 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
                 Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
@@ -684,6 +688,7 @@ export default function HomePage() {
               </div>
               <div className="text-center">Web</div>
               <div className="text-center">WP</div>
+              <div className="text-center"></div>
             </div>
 
             {/* Projects List */}
@@ -700,7 +705,7 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <div
               key={project.symbol}
-              className="grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 cursor-pointer transition-colors"
+              className="grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 cursor-pointer transition-colors"
               onClick={() => router.push(`/${project.symbol}`)}
             >
               <div>
@@ -756,6 +761,17 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
+              <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                <ProjectActionMenu
+                  projectSymbol={project.symbol}
+                  projectName={project.name}
+                  hasWhitepaper={!!project.whitepaper_tier}
+                  onAddWhitepaper={() => {
+                    setSelectedProject({ symbol: project.symbol, name: project.name });
+                    setShowAddWhitepaperModal(true);
+                  }}
+                />
+              </div>
             </div>
           ))}
 
@@ -790,6 +806,22 @@ export default function HomePage() {
           fetchProjects(1, true);
         }}
       />
+
+      {/* Add Whitepaper Modal */}
+      {selectedProject && (
+        <AddWhitepaperModal
+          isOpen={showAddWhitepaperModal}
+          projectSymbol={selectedProject.symbol}
+          projectName={selectedProject.name}
+          onClose={() => {
+            setShowAddWhitepaperModal(false);
+            setSelectedProject(null);
+          }}
+          onSuccess={() => {
+            fetchProjects(1, true);
+          }}
+        />
+      )}
     </div>
   );
 }
