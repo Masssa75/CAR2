@@ -80,7 +80,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
         <div className="text-center">
           <div className="text-gray-600 text-lg mb-4">No whitepaper analysis available</div>
           <button
-            onClick={() => router.push('/rank')}
+            onClick={() => router.push('/')}
             className="text-emerald-500 hover:underline"
           >
             ← Back to rankings
@@ -117,7 +117,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
             <div className="text-sm text-gray-400">{project.name}</div>
           </div>
           <button
-            onClick={() => router.push('/rank')}
+            onClick={() => router.push('/')}
             className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             <X className="w-5 h-5 text-gray-600" />
