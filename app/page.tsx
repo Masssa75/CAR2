@@ -138,7 +138,7 @@ export default function HomePage() {
   });
 
   function formatAge(years: number | null): string {
-    if (!years) return '—';
+    if (years === null || years === undefined) return '—';
     return `${years.toFixed(1)}y`;
   }
 
