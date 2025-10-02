@@ -19,7 +19,7 @@ interface Signal {
   signal: string;
   importance?: string;
   rarity_estimate?: string;
-  strength_score: number;
+  strength_score?: number;
   score_reasoning?: string;
   similar_to?: string;
 }
