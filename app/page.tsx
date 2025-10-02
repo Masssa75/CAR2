@@ -44,6 +44,9 @@ interface Project {
     project_description?: string;
     [key: string]: any;
   };
+  whitepaper_url?: string;
+  whitepaper_story_analysis?: any;
+  whitepaper_phase2_comparison?: any;
 }
 
 interface FilterState {
