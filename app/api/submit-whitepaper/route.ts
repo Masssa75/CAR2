@@ -22,6 +22,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Get project ID first
+    const { data: project, error: projectError } = await supabase
+      .from('crypto_projects_rated')
+      .select('id')
+      .eq('symbol', symbol.toUpperCase())
+      .single();
+
+    if (projectError || !project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
     // Update the project with the whitepaper URL if provided
     if (whitepaper_url) {
       const { error: updateError } = await supabase
@@ -40,17 +51,6 @@ export async function POST(request: NextRequest) {
 
     // If whitepaper content was provided, save it directly
     if (whitepaper_content) {
-      // Get project ID
-      const { data: project, error: projectError } = await supabase
-        .from('crypto_projects_rated')
-        .select('id')
-        .eq('symbol', symbol.toUpperCase())
-        .single();
-
-      if (projectError || !project) {
-        return NextResponse.json({ error: 'Project not found' }, { status: 404 });
-      }
-
       // Save content to whitepaper_content table
       const { error: contentError } = await supabase
         .from('whitepaper_content')
@@ -83,8 +83,8 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          symbol: symbol.toUpperCase(),
-          skip_fetch: !!whitepaper_content // Skip fetching if content was pasted
+          projectId: project.id,
+          skipAnalysis: false
         })
       });
 
