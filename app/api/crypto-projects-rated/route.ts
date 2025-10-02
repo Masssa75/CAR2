@@ -71,7 +71,6 @@ export async function GET(request: NextRequest) {
       network,
       contract_address,
       website_url,
-      website_screenshot_url,
       website_stage1_score,
       website_stage1_tier,
       website_stage1_analyzed_at,
