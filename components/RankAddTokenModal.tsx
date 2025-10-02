@@ -244,14 +244,21 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
           setContractAddress(`native:${details.id}`);
           setNetwork('other' as NetworkKey); // Native tokens use 'other' network
         } else {
+          // Map our network keys to CoinGecko's platform keys
+          const networkToPlatformKey: Record<NetworkKey, string> = {
+            ethereum: 'ethereum',
+            solana: 'solana',
+            bsc: 'binance-smart-chain',
+            base: 'base',
+            pulsechain: 'pulsechain'
+          };
+
           // Find the first available network we support
           const supportedNetworks = Object.keys(NETWORKS) as NetworkKey[];
           let foundNetwork = false;
 
           for (const net of supportedNetworks) {
-            const platformKey = net === 'ethereum' ? 'ethereum' :
-                              net === 'base' ? 'base' :
-                              net === 'solana' ? 'solana' : net;
+            const platformKey = networkToPlatformKey[net];
 
             if (details.platforms[platformKey]) {
               setContractAddress(details.platforms[platformKey]);
