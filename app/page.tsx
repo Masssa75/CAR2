@@ -417,7 +417,7 @@ export default function HomePage() {
       )}
 
       {/* List Header */}
-      <div className="sticky top-14 z-10 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+      <div className="sticky top-14 z-20 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
         <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
           Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
         </div>
