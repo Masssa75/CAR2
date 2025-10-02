@@ -7,7 +7,7 @@ import { Zap, Filter, Menu, Plus } from 'lucide-react';
 import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
-import { RankAddTokenModal } from '@/components/RankAddTokenModal';
+import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
 import RankSearchInput from '@/components/rank/RankSearchInput';
 
 const supabase = createClient(
@@ -475,7 +475,7 @@ export default function HomePage() {
       )}
 
       {/* Add Token Modal */}
-      <RankAddTokenModal
+      <SimpleAddTokenModal
         isOpen={showAddTokenModal}
         onClose={() => setShowAddTokenModal(false)}
         onSuccess={() => {
