@@ -244,6 +244,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
         if (details.isNativeToken) {
           setContractAddress(`native:${details.id}`);
           setNetwork('other' as NetworkKey); // Native tokens use 'other' network
+          setIsNativeToken(true); // Set native token flag
         } else {
           // Map our network keys to CoinGecko's platform keys
           const networkToPlatformKey: Record<NetworkKey, string> = {
@@ -298,6 +299,26 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
       setIsSubmitting(false);
     }
   }, []);
+
+  // Auto-fetch token details when native token CoinGecko ID is entered
+  const handleNativeTokenIdChange = useCallback((value: string) => {
+    setContractAddress(value);
+
+    // If it's a valid native token format (native:xxx), auto-fetch details
+    if (value.startsWith('native:') && value.length > 7) {
+      const coinId = value.replace('native:', '');
+
+      // Clear previous timeout
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      // Debounce the fetch
+      searchTimeoutRef.current = setTimeout(() => {
+        fetchTokenDetails(coinId);
+      }, 500);
+    }
+  }, [fetchTokenDetails]);
 
   if (!isOpen) return null;
 
@@ -786,7 +807,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
               id="contractAddress"
               type="text"
               value={contractAddress}
-              onChange={(e) => setContractAddress(e.target.value)}
+              onChange={(e) => isNativeToken ? handleNativeTokenIdChange(e.target.value) : setContractAddress(e.target.value)}
               placeholder={isNativeToken ? 'native:bittensor-token' : (network === 'solana' ? 'Enter Solana token address...' : '0x...')}
               className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500"
               disabled={isSubmitting}
@@ -794,7 +815,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
             />
             {isNativeToken && (
               <p className="mt-1 text-xs text-gray-500">
-                Format: native:coingecko-id (e.g., native:bittensor-token for Bittensor)
+                Format: native:coingecko-id (e.g., native:bittensor-token) - Details will auto-populate
               </p>
             )}
           </div>

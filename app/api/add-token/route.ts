@@ -31,6 +31,41 @@ function checkRateLimit(identifier: string): boolean {
   return true;
 }
 
+// Fetch native token data from CoinGecko
+async function fetchNativeTokenFromCoinGecko(coinGeckoId: string) {
+  try {
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/coins/${coinGeckoId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          ...(process.env.COINGECKO_API_KEY && {
+            'x-cg-demo-api-key': process.env.COINGECKO_API_KEY
+          })
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`CoinGecko API error: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+
+    return {
+      symbol: data.symbol?.toUpperCase() || coinGeckoId.toUpperCase(),
+      name: data.name || coinGeckoId,
+      website: data.links?.homepage?.[0] || null,
+      whitepaper: data.links?.whitepaper || null,
+      market_cap: data.market_data?.market_cap?.usd || null
+    };
+  } catch (error) {
+    console.error('Error fetching from CoinGecko:', error);
+    return null;
+  }
+}
+
 // Fetch token data from DexScreener
 async function fetchTokenDataFromDexScreener(contractAddress: string, network: string) {
   try {
@@ -190,8 +225,31 @@ export async function POST(request: NextRequest) {
     let tokenData: any = null;
 
     if (isNativeToken) {
-      // For native tokens, we need at least a website URL
-      if (!websiteUrl && !body.websiteUrl) {
+      // Extract coingecko ID and fetch token data
+      const coingeckoId = contractAddress.replace('native:', '');
+      console.log(`Fetching native token data for ${coingeckoId} from CoinGecko`);
+
+      const coinGeckoData = await fetchNativeTokenFromCoinGecko(coingeckoId);
+
+      if (!coinGeckoData) {
+        return NextResponse.json(
+          { error: `Token '${coingeckoId}' not found on CoinGecko. Please verify the CoinGecko ID.` },
+          { status: 404 }
+        );
+      }
+
+      // Use fetched data, with manual overrides if provided
+      tokenData = {
+        poolAddress: null,
+        symbol: coinGeckoData.symbol,
+        name: coinGeckoData.name,
+        website: websiteUrl || body.websiteUrl || coinGeckoData.website,
+        liquidity: 1000000, // Native tokens don't need liquidity check
+        isNative: true
+      };
+
+      // Validate that we have a website
+      if (!tokenData.website) {
         return NextResponse.json(
           {
             error: 'Website URL is required for Layer 1 tokens.',
@@ -200,17 +258,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      // Extract coingecko ID and use it for symbol (temporarily)
-      const coingeckoId = contractAddress.replace('native:', '');
-      tokenData = {
-        poolAddress: null,
-        symbol: coingeckoId.toUpperCase(), // Will be replaced by actual symbol from ingestion
-        name: coingeckoId, // Will be replaced by actual name
-        website: websiteUrl || body.websiteUrl,
-        liquidity: 1000000, // Native tokens don't need liquidity check
-        isNative: true
-      };
     } else {
       // Fetch token data from DexScreener for contract-based tokens
       console.log(`Fetching data for ${normalizedAddress} on ${normalizedNetwork}`);
