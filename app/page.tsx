@@ -45,13 +45,11 @@ export default function HomePage() {
 
   async function fetchProjects() {
     try {
-      const { data, error } = await supabase
-        .from('crypto_projects_rated')
-        .select('symbol, name, project_age_years, current_market_cap, website_stage1_tier, whitepaper_tier')
-        .order('current_market_cap', { ascending: false, nullsFirst: false });
+      const response = await fetch('/api/crypto-projects-rated?limit=100&sortBy=current_market_cap&sortOrder=desc');
+      const json = await response.json();
 
-      if (error) throw error;
-      setProjects(data || []);
+      if (json.error) throw new Error(json.error);
+      setProjects(json.data || []);
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {
