@@ -309,7 +309,7 @@ export async function POST(request: NextRequest) {
       const errorText = await ingestionResponse.text();
       console.error('Ingestion failed:', errorText);
       return NextResponse.json(
-        { error: 'Failed to add token. Please try again.' },
+        { error: `Ingestion failed: ${errorText.substring(0, 200)}` },
         { status: 500 }
       );
     }
@@ -333,10 +333,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in add-token API:', error);
     return NextResponse.json(
-      { error: 'An unexpected error occurred. Please try again.' },
+      { error: `Unexpected error: ${error?.message || String(error)}` },
       { status: 500 }
     );
   }
