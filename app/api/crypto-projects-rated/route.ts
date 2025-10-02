@@ -61,57 +61,11 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    // Build query for general listing - SELECT ONLY NEEDED FIELDS
-    // This dramatically reduces payload size from ~500KB to ~50KB
-    // Note: Large JSON fields (analysis, signals, etc.) are loaded separately via tooltips
-    const selectFields = `
-      id,
-      symbol,
-      name,
-      network,
-      contract_address,
-      website_url,
-      website_stage1_score,
-      website_stage1_tier,
-      website_stage1_analyzed_at,
-      current_liquidity_usd,
-      current_market_cap,
-      current_price_usd,
-      roi_percent,
-      initial_liquidity_usd,
-      initial_market_cap,
-      one_liner,
-      token_type,
-      is_imposter,
-      is_dead,
-      contract_verification,
-      twitter_url,
-      social_urls,
-      x_stage1_score,
-      x_stage1_tier,
-      x_analyzed_at,
-      whitepaper_url,
-      whitepaper_tier,
-      whitepaper_quality_score,
-      whitepaper_story_analysis,
-      whitepaper_phase2_comparison,
-      whitepaper_analyzed_at,
-      project_age_years,
-      age_source,
-      launch_date,
-      created_at,
-      extraction_status,
-      comparison_status,
-      signal_feedback,
-      website_stage1_analysis,
-      benchmark_comparison,
-      x_analysis,
-      whitepaper_analysis
-    `.replace(/\s+/g, ' ').trim();
-
+    // Build query for general listing - SELECT ALL FIELDS
+    // Using * to avoid schema mismatch errors during CAR2 migration
     let query = supabase
       .from('crypto_projects_rated')
-      .select(selectFields, { count: 'exact' });
+      .select('*', { count: 'exact' });
     
     // Only apply score filters if minScore > 0 (to include unanalyzed tokens with null scores)
     if (minScore > 0) {
