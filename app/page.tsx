@@ -42,7 +42,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<SortColumn>('current_market_cap');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true); // Open by default on desktop
   const [showMenu, setShowMenu] = useState(false);
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
@@ -220,7 +220,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
         <div className="flex justify-between items-center px-5 py-4">
@@ -277,144 +277,286 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Filter Panel */}
-      {showFilters && (
-        <div className="bg-white border-b border-gray-200 px-5 py-5">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-bold text-gray-900">Filters</h3>
-            <button
-              onClick={() => {
-                // Reset all filters
-                setFilters({
-                  tokenType: 'all',
-                  websiteTiers: [],
-                  whitepaperTiers: [],
-                  maxAge: '',
-                  maxMcap: ''
-                });
-              }}
-              className="text-sm text-emerald-500 font-semibold"
-            >
-              Reset
-            </button>
-          </div>
-
-          {/* Token Type */}
-          <div className="mb-4">
-            <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Token Type</div>
-            <div className="flex gap-2 flex-wrap">
+      {/* Main Content Area - Flex Container */}
+      <div className="flex flex-1">
+        {/* Desktop Filter Sidebar */}
+        {showFilters && (
+          <div className="hidden md:block w-72 border-r border-gray-200 bg-gray-50 p-5 overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide">Filters</h3>
               <button
-                onClick={() => setFilters(prev => ({ ...prev, tokenType: 'all' }))}
-                className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  filters.tokenType === 'all'
-                    ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                    : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                }`}
+                onClick={() => {
+                  // Reset all filters
+                  setFilters({
+                    tokenType: 'all',
+                    websiteTiers: [],
+                    whitepaperTiers: [],
+                    maxAge: '',
+                    maxMcap: ''
+                  });
+                }}
+                className="text-xs text-emerald-500 font-semibold uppercase tracking-wide"
               >
-                All
-              </button>
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, tokenType: 'utility' }))}
-                className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  filters.tokenType === 'utility'
-                    ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                    : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                }`}
-              >
-                Utility
-              </button>
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, tokenType: 'meme' }))}
-                className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  filters.tokenType === 'meme'
-                    ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                    : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                }`}
-              >
-                Meme
+                Reset
               </button>
             </div>
-          </div>
 
-          {/* Website Tier */}
-          <div className="mb-4">
-            <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Website Tier</div>
-            <div className="flex gap-2 flex-wrap">
-              {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
+            {/* Token Type */}
+            <div className="mb-6">
+              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Token Type</div>
+              <div className="flex flex-col gap-2">
                 <button
-                  key={tier}
-                  onClick={() => {
-                    setFilters(prev => ({
-                      ...prev,
-                      websiteTiers: prev.websiteTiers.includes(tier)
-                        ? prev.websiteTiers.filter(t => t !== tier)
-                        : [...prev.websiteTiers, tier]
-                    }));
-                  }}
+                  onClick={() => setFilters(prev => ({ ...prev, tokenType: 'all' }))}
                   className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    filters.websiteTiers.includes(tier)
+                    filters.tokenType === 'all'
                       ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                      : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                      : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
                   }`}
                 >
-                  {tier}
+                  All
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Whitepaper Tier */}
-          <div className="mb-4">
-            <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Whitepaper Tier</div>
-            <div className="flex gap-2 flex-wrap">
-              {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
                 <button
-                  key={tier}
-                  onClick={() => {
-                    setFilters(prev => ({
-                      ...prev,
-                      whitepaperTiers: prev.whitepaperTiers.includes(tier)
-                        ? prev.whitepaperTiers.filter(t => t !== tier)
-                        : [...prev.whitepaperTiers, tier]
-                    }));
-                  }}
+                  onClick={() => setFilters(prev => ({ ...prev, tokenType: 'utility' }))}
                   className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    filters.whitepaperTiers.includes(tier)
+                    filters.tokenType === 'utility'
                       ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                      : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                      : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
                   }`}
                 >
-                  {tier}
+                  Utility
                 </button>
-              ))}
+                <button
+                  onClick={() => setFilters(prev => ({ ...prev, tokenType: 'meme' }))}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    filters.tokenType === 'meme'
+                      ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                      : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
+                  }`}
+                >
+                  Meme
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Max Age and Max MCap */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max Age</div>
-              <input
-                type="text"
-                placeholder="e.g. 2y"
-                value={filters.maxAge}
-                onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
-                className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-              />
+            {/* Website Tier */}
+            <div className="mb-6">
+              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Website Tier</div>
+              <div className="flex flex-col gap-2">
+                {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
+                  <button
+                    key={tier}
+                    onClick={() => {
+                      setFilters(prev => ({
+                        ...prev,
+                        websiteTiers: prev.websiteTiers.includes(tier)
+                          ? prev.websiteTiers.filter(t => t !== tier)
+                          : [...prev.websiteTiers, tier]
+                      }));
+                    }}
+                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      filters.websiteTiers.includes(tier)
+                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                        : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
+                    }`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div>
-              <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max MCap</div>
-              <input
-                type="text"
-                placeholder="e.g. $1B"
-                value={filters.maxMcap}
-                onChange={(e) => setFilters(prev => ({ ...prev, maxMcap: e.target.value }))}
-                className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-              />
+
+            {/* Whitepaper Tier */}
+            <div className="mb-6">
+              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Whitepaper Tier</div>
+              <div className="flex flex-col gap-2">
+                {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
+                  <button
+                    key={tier}
+                    onClick={() => {
+                      setFilters(prev => ({
+                        ...prev,
+                        whitepaperTiers: prev.whitepaperTiers.includes(tier)
+                          ? prev.whitepaperTiers.filter(t => t !== tier)
+                          : [...prev.whitepaperTiers, tier]
+                      }));
+                    }}
+                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      filters.whitepaperTiers.includes(tier)
+                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                        : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
+                    }`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Max Age and Max MCap */}
+            <div className="space-y-4">
+              <div>
+                <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max Age</div>
+                <input
+                  type="text"
+                  placeholder="e.g. 2y"
+                  value={filters.maxAge}
+                  onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
+                  className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max MCap</div>
+                <input
+                  type="text"
+                  placeholder="e.g. $1B"
+                  value={filters.maxMcap}
+                  onChange={(e) => setFilters(prev => ({ ...prev, maxMcap: e.target.value }))}
+                  className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Mobile Filter Panel (top dropdown) */}
+          {showFilters && (
+            <div className="md:hidden bg-white border-b border-gray-200 px-5 py-5">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-bold text-gray-900">Filters</h3>
+                <button
+                  onClick={() => {
+                    setFilters({
+                      tokenType: 'all',
+                      websiteTiers: [],
+                      whitepaperTiers: [],
+                      maxAge: '',
+                      maxMcap: ''
+                    });
+                  }}
+                  className="text-sm text-emerald-500 font-semibold"
+                >
+                  Reset
+                </button>
+              </div>
+
+              {/* Token Type */}
+              <div className="mb-4">
+                <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Token Type</div>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, tokenType: 'all' }))}
+                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      filters.tokenType === 'all'
+                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, tokenType: 'utility' }))}
+                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      filters.tokenType === 'utility'
+                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                    }`}
+                  >
+                    Utility
+                  </button>
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, tokenType: 'meme' }))}
+                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      filters.tokenType === 'meme'
+                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                    }`}
+                  >
+                    Meme
+                  </button>
+                </div>
+              </div>
+
+              {/* Website Tier */}
+              <div className="mb-4">
+                <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Website Tier</div>
+                <div className="flex gap-2 flex-wrap">
+                  {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
+                    <button
+                      key={tier}
+                      onClick={() => {
+                        setFilters(prev => ({
+                          ...prev,
+                          websiteTiers: prev.websiteTiers.includes(tier)
+                            ? prev.websiteTiers.filter(t => t !== tier)
+                            : [...prev.websiteTiers, tier]
+                        }));
+                      }}
+                      className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                        filters.websiteTiers.includes(tier)
+                          ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                          : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                      }`}
+                    >
+                      {tier}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Whitepaper Tier */}
+              <div className="mb-4">
+                <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Whitepaper Tier</div>
+                <div className="flex gap-2 flex-wrap">
+                  {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
+                    <button
+                      key={tier}
+                      onClick={() => {
+                        setFilters(prev => ({
+                          ...prev,
+                          whitepaperTiers: prev.whitepaperTiers.includes(tier)
+                            ? prev.whitepaperTiers.filter(t => t !== tier)
+                            : [...prev.whitepaperTiers, tier]
+                        }));
+                      }}
+                      className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                        filters.whitepaperTiers.includes(tier)
+                          ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                          : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                      }`}
+                    >
+                      {tier}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Max Age and Max MCap */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max Age</div>
+                  <input
+                    type="text"
+                    placeholder="e.g. 2y"
+                    value={filters.maxAge}
+                    onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
+                    className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Max MCap</div>
+                  <input
+                    type="text"
+                    placeholder="e.g. $1B"
+                    value={filters.maxMcap}
+                    onChange={(e) => setFilters(prev => ({ ...prev, maxMcap: e.target.value }))}
+                    className="w-full px-2.5 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
       {/* List Header */}
       <div className="sticky top-14 z-20 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -474,6 +616,9 @@ export default function HomePage() {
           ))}
         </div>
       )}
+
+        </div>
+      </div>
 
       {/* Add Token Modal */}
       <SimpleAddTokenModal
