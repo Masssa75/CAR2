@@ -559,7 +559,7 @@ export default function HomePage() {
           )}
 
       {/* List Header */}
-      <div className="sticky top-14 z-20 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+      <div className="sticky top-0 z-20 grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
         <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
           Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
         </div>
@@ -598,7 +598,14 @@ export default function HomePage() {
                     projectSymbol={project.symbol}
                     isAdmin={false}
                   >
-                    <ProgressRing tier={project.website_stage1_tier} />
+                    <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                      project.website_stage1_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
+                      project.website_stage1_tier === 'SOLID' ? 'bg-amber-50 text-amber-600' :
+                      project.website_stage1_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {project.website_stage1_tier}
+                    </span>
                   </SignalBasedTooltip>
                 )}
               </div>
@@ -608,7 +615,14 @@ export default function HomePage() {
                     projectSymbol={project.symbol}
                     whitepaperTier={project.whitepaper_tier}
                   >
-                    <ProgressRing tier={project.whitepaper_tier} />
+                    <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                      project.whitepaper_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
+                      project.whitepaper_tier === 'SOLID' ? 'bg-amber-50 text-amber-600' :
+                      project.whitepaper_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {project.whitepaper_tier}
+                    </span>
                   </WhitepaperTooltip>
                 )}
               </div>

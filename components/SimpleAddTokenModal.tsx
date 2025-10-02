@@ -131,6 +131,15 @@ export function SimpleAddTokenModal({ isOpen, onClose, onSuccess }: SimpleAddTok
         network: selectedCandidate.network || 'ethereum'
       };
 
+      // Include symbol and name if available (from CoinGecko)
+      if (selectedCandidate.symbol) {
+        payload.symbol = selectedCandidate.symbol;
+      }
+
+      if (selectedCandidate.name) {
+        payload.name = selectedCandidate.name;
+      }
+
       if (selectedCandidate.website) {
         payload.websiteUrl = selectedCandidate.website;
       }

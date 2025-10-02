@@ -259,23 +259,36 @@ export async function POST(request: NextRequest) {
         );
       }
     } else {
-      // Fetch token data from DexScreener for contract-based tokens
-      console.log(`Fetching data for ${normalizedAddress} on ${normalizedNetwork}`);
-      tokenData = await fetchTokenDataFromDexScreener(normalizedAddress, normalizedNetwork);
+      // Check if we have CoinGecko data (symbol, name, website) - if so, skip DexScreener
+      if (body.symbol && body.name && (websiteUrl || body.websiteUrl)) {
+        console.log(`Using CoinGecko data for ${body.symbol} - skipping DexScreener validation`);
+        tokenData = {
+          poolAddress: null,
+          symbol: body.symbol,
+          name: body.name,
+          website: websiteUrl || body.websiteUrl,
+          liquidity: 1000000, // Skip liquidity check for CoinGecko tokens
+          isNative: false
+        };
+      } else {
+        // Fetch token data from DexScreener for contract-based tokens
+        console.log(`Fetching data for ${normalizedAddress} on ${normalizedNetwork}`);
+        tokenData = await fetchTokenDataFromDexScreener(normalizedAddress, normalizedNetwork);
 
-      if (!tokenData) {
-        return NextResponse.json(
-          { error: 'Token not found on DexScreener. Please ensure the token is listed on a DEX.' },
-          { status: 404 }
-        );
-      }
+        if (!tokenData) {
+          return NextResponse.json(
+            { error: 'Token not found on DexScreener. Please ensure the token is listed on a DEX.' },
+            { status: 404 }
+          );
+        }
 
-      // If liquidity is too low, reject
-      if (tokenData.liquidity < 100) {
-        return NextResponse.json(
-          { error: 'Token liquidity too low. Minimum $100 liquidity required.' },
-          { status: 400 }
-        );
+        // If liquidity is too low, reject
+        if (tokenData.liquidity < 100) {
+          return NextResponse.json(
+            { error: 'Token liquidity too low. Minimum $100 liquidity required.' },
+            { status: 400 }
+          );
+        }
       }
     }
 
