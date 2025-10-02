@@ -228,10 +228,13 @@ export function WhitepaperTooltip({
               {whitepaperStoryAnalysis.simple_description}
             </div>
 
-            {/* Tier Explanation - second paragraph */}
+            {/* Tier Explanation */}
             {whitepaperPhase2Comparison?.explanation && (
-              <div className="text-sm text-gray-600 leading-relaxed mt-3">
-                {whitepaperPhase2Comparison.explanation}
+              <div className="mt-4">
+                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Reasoning:</h4>
+                <div className="text-sm text-gray-600 leading-relaxed">
+                  {whitepaperPhase2Comparison.explanation}
+                </div>
               </div>
             )}
           </div>
