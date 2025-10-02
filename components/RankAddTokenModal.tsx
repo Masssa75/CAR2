@@ -768,7 +768,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
                   onChange={() => {
                     setIsNativeToken(true);
                     setContractAddress('native:');
-                    setShowWebsiteInput(true); // Native tokens require website
+                    setShowAdvanced(true); // Auto-expand advanced options for native tokens
                   }}
                   className="mr-2"
                 />
@@ -816,6 +816,28 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
 
             {showAdvanced && (
               <div className="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+                {/* Website URL for Native Tokens */}
+                {isNativeToken && (
+                  <div>
+                    <label htmlFor="websiteUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                      Website URL <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="websiteUrl"
+                      type="url"
+                      value={manualWebsiteUrl}
+                      onChange={(e) => setManualWebsiteUrl(e.target.value)}
+                      placeholder="https://bittensor.com"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                      disabled={isSubmitting}
+                      required
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Website URL is required for Layer 1 native tokens
+                    </p>
+                  </div>
+                )}
+
                 {/* Whitepaper URL */}
                 <div>
                   <label htmlFor="whitepaperUrl" className="block text-sm font-medium text-gray-700 mb-1">
