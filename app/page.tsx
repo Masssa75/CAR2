@@ -130,46 +130,49 @@ export default function HomePage() {
       });
 
       // Add search
-      if (searchQuery.trim()) {
+      const hasSearch = searchQuery.trim().length > 0;
+      if (hasSearch) {
         params.append('search', searchQuery);
       }
 
-      // Add filters
-      if (filters.tokenType !== 'all') {
-        params.append('tokenType', filters.tokenType);
-      }
-
-      if (filters.websiteTiers.length > 0) {
-        params.append('websiteTiers', filters.websiteTiers.join(','));
-      }
-
-      if (filters.whitepaperTiers.length > 0) {
-        params.append('whitepaperTiers', filters.whitepaperTiers.join(','));
-      }
-
-      if (filters.maxAge) {
-        const maxAgeValue = parseFloat(filters.maxAge);
-        if (!isNaN(maxAgeValue)) {
-          params.append('maxAge', maxAgeValue.toString());
-        }
-      }
-
-      if (filters.maxMcap) {
-        const input = filters.maxMcap.toUpperCase().replace(/[$,]/g, '');
-        let maxMcapValue = 0;
-
-        if (input.endsWith('K')) {
-          maxMcapValue = parseFloat(input.slice(0, -1)) * 1000;
-        } else if (input.endsWith('M')) {
-          maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000;
-        } else if (input.endsWith('B')) {
-          maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000000;
-        } else {
-          maxMcapValue = parseFloat(input);
+      // Add filters (only when NOT searching - search overrides all filters)
+      if (!hasSearch) {
+        if (filters.tokenType !== 'all') {
+          params.append('tokenType', filters.tokenType);
         }
 
-        if (!isNaN(maxMcapValue) && maxMcapValue > 0) {
-          params.append('maxMarketCap', maxMcapValue.toString());
+        if (filters.websiteTiers.length > 0) {
+          params.append('websiteTiers', filters.websiteTiers.join(','));
+        }
+
+        if (filters.whitepaperTiers.length > 0) {
+          params.append('whitepaperTiers', filters.whitepaperTiers.join(','));
+        }
+
+        if (filters.maxAge) {
+          const maxAgeValue = parseFloat(filters.maxAge);
+          if (!isNaN(maxAgeValue)) {
+            params.append('maxAge', maxAgeValue.toString());
+          }
+        }
+
+        if (filters.maxMcap) {
+          const input = filters.maxMcap.toUpperCase().replace(/[$,]/g, '');
+          let maxMcapValue = 0;
+
+          if (input.endsWith('K')) {
+            maxMcapValue = parseFloat(input.slice(0, -1)) * 1000;
+          } else if (input.endsWith('M')) {
+            maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000;
+          } else if (input.endsWith('B')) {
+            maxMcapValue = parseFloat(input.slice(0, -1)) * 1000000000;
+          } else {
+            maxMcapValue = parseFloat(input);
+          }
+
+          if (!isNaN(maxMcapValue) && maxMcapValue > 0) {
+            params.append('maxMarketCap', maxMcapValue.toString());
+          }
         }
       }
 
