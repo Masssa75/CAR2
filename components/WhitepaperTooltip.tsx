@@ -247,17 +247,15 @@ export function WhitepaperTooltip({
           </div>
         )}
 
-        {/* Whitepaper URL Link */}
-        {whitepaperUrl && (
+        {/* How It Works Link */}
+        {projectSymbol && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <a
-              href={whitepaperUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`/${projectSymbol.toUpperCase()}`}
               className="text-xs text-emerald-500 hover:underline flex items-center gap-1"
             >
               <FileText className="w-3 h-3" />
-              View Whitepaper
+              How It Works
             </a>
           </div>
         )}
