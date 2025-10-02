@@ -730,7 +730,7 @@ export default function HomePage() {
                 )}
               </div>
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                {project.whitepaper_tier && (
+                {project.whitepaper_tier ? (
                   <WhitepaperTooltip
                     projectSymbol={project.symbol}
                     whitepaperTier={project.whitepaper_tier}
@@ -747,6 +747,13 @@ export default function HomePage() {
                       {project.whitepaper_tier}
                     </span>
                   </WhitepaperTooltip>
+                ) : (
+                  <div className="relative group">
+                    <span className="text-gray-300 text-xs cursor-help">—</span>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                      No whitepaper found
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
