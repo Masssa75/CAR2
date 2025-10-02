@@ -61,7 +61,7 @@ export default function HomePage() {
 
   async function fetchProjects() {
     try {
-      const response = await fetch('/api/crypto-projects-rated?limit=100&sortBy=current_market_cap&sortOrder=desc&includeUnverified=true');
+      const response = await fetch('/api/crypto-projects-rated?limit=500&sortBy=current_market_cap&sortOrder=desc&includeUnverified=true');
       const json = await response.json();
 
       if (json.error) throw new Error(json.error);
