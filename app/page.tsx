@@ -22,11 +22,11 @@ interface Project {
   current_market_cap: number | null;
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
-  token_type: 'meme' | 'utility' | null;
+  token_type: 'meme' | 'utility' | 'stablecoin' | null;
 }
 
 interface FilterState {
-  tokenType: 'all' | 'utility' | 'meme';
+  tokenType: 'all' | 'utility' | 'meme' | 'stablecoin';
   websiteTiers: string[];
   whitepaperTiers: string[];
   maxAge: string;
@@ -390,6 +390,16 @@ export default function HomePage() {
                 >
                   Meme
                 </button>
+                <button
+                  onClick={() => setFilters(prev => ({ ...prev, tokenType: 'stablecoin' }))}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    filters.tokenType === 'stablecoin'
+                      ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                      : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
+                  }`}
+                >
+                  Stablecoin
+                </button>
               </div>
             </div>
 
@@ -529,6 +539,16 @@ export default function HomePage() {
                     }`}
                   >
                     Meme
+                  </button>
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, tokenType: 'stablecoin' }))}
+                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      filters.tokenType === 'stablecoin'
+                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
+                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                    }`}
+                  >
+                    Stablecoin
                   </button>
                 </div>
               </div>
