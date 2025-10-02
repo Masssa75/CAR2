@@ -681,6 +681,8 @@ export default function HomePage() {
                 {project.website_stage1_tier && (
                   <SignalBasedTooltip
                     projectSymbol={project.symbol}
+                    signals={project.signals_found}
+                    redFlags={project.red_flags}
                     isAdmin={false}
                   >
                     <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
