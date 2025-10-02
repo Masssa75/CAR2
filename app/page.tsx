@@ -82,10 +82,10 @@ export default function HomePage() {
     };
   }, [searchQuery]);
 
-  // Refetch when filters change
+  // Refetch when filters or sort changes
   useEffect(() => {
     fetchProjects(1, true);
-  }, [filters]);
+  }, [filters, sortColumn, sortDirection]);
 
   async function fetchProjects(pageNum: number, reset: boolean = false) {
     try {
@@ -99,8 +99,8 @@ export default function HomePage() {
       const params = new URLSearchParams({
         page: pageNum.toString(),
         limit: '50',
-        sortBy: 'current_market_cap',
-        sortOrder: 'desc',
+        sortBy: sortColumn,
+        sortOrder: sortDirection,
         includeUnverified: 'true'
       });
 
@@ -257,26 +257,13 @@ export default function HomePage() {
 
   const activeFilterCount = getActiveFilterCount();
 
-  // All filtering now happens server-side - projects are already filtered
+  // All filtering and sorting now happens server-side
   const filteredProjects = projects;
 
-  const sortedProjects = [...filteredProjects].sort((a, b) => {
-    if (hotPicksActive) {
-      return calculateHotPicksScore(b) - calculateHotPicksScore(a);
-    }
-
-    const aValue = a[sortColumn];
-    const bValue = b[sortColumn];
-
-    if (aValue === null || aValue === undefined) return 1;
-    if (bValue === null || bValue === undefined) return -1;
-
-    if (sortDirection === 'asc') {
-      return aValue < bValue ? -1 : 1;
-    } else {
-      return aValue > bValue ? -1 : 1;
-    }
-  });
+  // Only apply client-side sorting for Hot Picks
+  const sortedProjects = hotPicksActive
+    ? [...filteredProjects].sort((a, b) => calculateHotPicksScore(b) - calculateHotPicksScore(a))
+    : filteredProjects;
 
   function formatAge(years: number | null): string {
     if (years === null || years === undefined) return '—';
