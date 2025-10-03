@@ -71,7 +71,7 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>('current_market_cap');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
@@ -88,6 +88,18 @@ export default function HomePage() {
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  // Set filters open on desktop by default
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setShowFilters(window.innerWidth >= 768); // md breakpoint
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   useEffect(() => {
     fetchProjects(1, true);
