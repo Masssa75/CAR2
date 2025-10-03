@@ -722,12 +722,12 @@ export default function HomePage() {
               className="grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 cursor-pointer transition-colors"
               onClick={() => router.push(`/${project.symbol}`)}
             >
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
+              <div className="flex items-center gap-1">
+                <div>
                   <div className="font-bold text-base">{project.symbol}</div>
                   <div className="text-sm text-gray-400">{project.name}</div>
                 </div>
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                   {project.website_url && (
                     <a
                       href={project.website_url}
