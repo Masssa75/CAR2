@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Zap, Filter, Menu, Plus } from 'lucide-react';
+import { Zap, Filter, Menu, Plus, Gem, Clock, List } from 'lucide-react';
 import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
@@ -61,8 +61,9 @@ interface FilterState {
   maxMcap: string;
 }
 
-type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier';
+type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier' | 'created_at';
 type SortDirection = 'asc' | 'desc';
+type ViewMode = 'gem' | 'latest' | 'all' | null;
 
 export default function HomePage() {
   const router = useRouter();
@@ -71,10 +72,12 @@ export default function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-  const [sortColumn, setSortColumn] = useState<SortColumn>('current_market_cap');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortColumn, setSortColumn] = useState<SortColumn>('project_age_years');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [showFilters, setShowFilters] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showViewModeDropdown, setShowViewModeDropdown] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('gem');
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
   const [showAddWhitepaperModal, setShowAddWhitepaperModal] = useState(false);
@@ -84,8 +87,8 @@ export default function HomePage() {
   const [filters, setFilters] = useState<FilterState>({
     tokenType: 'all',
     websiteTiers: [],
-    whitepaperTiers: ['ALPHA'], // Default: Show only ALPHA whitepapers
-    maxAge: '5', // Default: Show projects 5 years or younger (fresh gems)
+    whitepaperTiers: ['ALPHA'], // Default for Gem mode
+    maxAge: '5', // Default for Gem mode
     maxMcap: ''
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -123,6 +126,24 @@ export default function HomePage() {
       if (timeout) clearTimeout(timeout);
     };
   }, [searchQuery]);
+
+  // Detect manual filter changes and deactivate view mode
+  const filtersRef = useRef(filters);
+  useEffect(() => {
+    // Check if filters changed manually (not from applyViewMode)
+    const prevFilters = filtersRef.current;
+    if (
+      viewMode &&
+      (prevFilters.tokenType !== filters.tokenType ||
+        JSON.stringify(prevFilters.websiteTiers) !== JSON.stringify(filters.websiteTiers) ||
+        JSON.stringify(prevFilters.whitepaperTiers) !== JSON.stringify(filters.whitepaperTiers) ||
+        prevFilters.maxAge !== filters.maxAge ||
+        prevFilters.maxMcap !== filters.maxMcap)
+    ) {
+      setViewMode(null);
+    }
+    filtersRef.current = filters;
+  }, [filters]);
 
   // Refetch when filters or sort changes
   useEffect(() => {
@@ -248,6 +269,47 @@ export default function HomePage() {
       setSortDirection('desc');
     }
     setHotPicksActive(false);
+    setViewMode(null); // Deactivate view mode when manually sorting
+  }
+
+  function applyViewMode(mode: ViewMode) {
+    setViewMode(mode);
+    setShowViewModeDropdown(false);
+
+    if (mode === 'gem') {
+      // Gem mode: age ≤5y, whitepaper ALPHA, sort by youngest
+      setFilters({
+        tokenType: 'all',
+        websiteTiers: [],
+        whitepaperTiers: ['ALPHA'],
+        maxAge: '5',
+        maxMcap: ''
+      });
+      setSortColumn('project_age_years');
+      setSortDirection('asc');
+    } else if (mode === 'latest') {
+      // Latest mode: clear filters, sort by newest added
+      setFilters({
+        tokenType: 'all',
+        websiteTiers: [],
+        whitepaperTiers: [],
+        maxAge: '',
+        maxMcap: ''
+      });
+      setSortColumn('created_at');
+      setSortDirection('desc');
+    } else if (mode === 'all') {
+      // All mode: clear filters, sort by market cap
+      setFilters({
+        tokenType: 'all',
+        websiteTiers: [],
+        whitepaperTiers: [],
+        maxAge: '',
+        maxMcap: ''
+      });
+      setSortColumn('current_market_cap');
+      setSortDirection('desc');
+    }
   }
 
   function calculateHotPicksScore(project: Project): number {
@@ -333,19 +395,60 @@ export default function HomePage() {
           </div>
           <div className="flex gap-3">
             <RankSearchInput onSearch={setSearchQuery} placeholder="Search symbol or name..." />
-            <button
-              onClick={toggleHotPicks}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
-                hotPicksActive
-                  ? 'bg-gradient-to-br from-yellow-300 to-orange-500'
-                  : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-            >
-              <Zap
-                className={`w-5 h-5 ${hotPicksActive ? 'text-white' : 'text-gray-600'}`}
-                strokeWidth={hotPicksActive ? 2.5 : 2}
-              />
-            </button>
+
+            {/* View Mode Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowViewModeDropdown(!showViewModeDropdown)}
+                className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
+                  viewMode
+                    ? 'bg-gradient-to-br from-emerald-400 to-emerald-600'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                {viewMode === 'gem' && <Gem className="w-5 h-5 text-white" strokeWidth={2.5} />}
+                {viewMode === 'latest' && <Clock className="w-5 h-5 text-white" strokeWidth={2.5} />}
+                {viewMode === 'all' && <List className="w-5 h-5 text-white" strokeWidth={2.5} />}
+                {!viewMode && <Gem className="w-5 h-5 text-gray-600" strokeWidth={2} />}
+              </button>
+
+              {/* View Mode Dropdown Menu */}
+              {showViewModeDropdown && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowViewModeDropdown(false)} />
+                  <div className="absolute top-12 right-0 z-40 bg-white border border-gray-200 rounded-lg shadow-lg w-40">
+                    <button
+                      onClick={() => applyViewMode('gem')}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                        viewMode === 'gem' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      <Gem className="w-4 h-4" />
+                      Gem
+                    </button>
+                    <button
+                      onClick={() => applyViewMode('latest')}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                        viewMode === 'latest' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      <Clock className="w-4 h-4" />
+                      Latest
+                    </button>
+                    <button
+                      onClick={() => applyViewMode('all')}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                        viewMode === 'all' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      <List className="w-4 h-4" />
+                      All
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 relative"
