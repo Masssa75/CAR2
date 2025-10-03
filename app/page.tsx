@@ -720,9 +720,39 @@ export default function HomePage() {
               className="grid grid-cols-[2fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 cursor-pointer transition-colors"
               onClick={() => router.push(`/${project.symbol}`)}
             >
-              <div>
-                <div className="font-bold text-base">{project.symbol}</div>
-                <div className="text-sm text-gray-400">{project.name}</div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="font-bold text-base">{project.symbol}</div>
+                  <div className="text-sm text-gray-400">{project.name}</div>
+                </div>
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  {project.website_url && (
+                    <a
+                      href={project.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-emerald-600 transition-colors"
+                      title="Visit website"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      </svg>
+                    </a>
+                  )}
+                  {project.coingecko_id && (
+                    <a
+                      href={`https://www.coingecko.com/en/coins/${project.coingecko_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-emerald-600 transition-colors"
+                      title="View on CoinGecko"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
               </div>
               <div className="text-sm text-gray-600 font-medium">{formatAge(project.project_age_years)}</div>
               <div className="text-sm text-gray-600 font-medium">{formatMcap(project.current_market_cap)}</div>
