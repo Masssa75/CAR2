@@ -727,7 +727,7 @@ export default function HomePage() {
                 <div className="font-bold text-base">{project.symbol}</div>
                 <div className="text-sm text-gray-400">{project.name}</div>
               </div>
-              <div className="flex items-center gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-start gap-1 justify-center pt-1" onClick={(e) => e.stopPropagation()}>
                 {project.website_url && (
                   <a
                     href={project.website_url}
