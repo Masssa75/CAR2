@@ -49,6 +49,8 @@ interface Project {
   whitepaper_url?: string;
   whitepaper_story_analysis?: any;
   whitepaper_phase2_comparison?: any;
+  website_url?: string;
+  coingecko_id?: string;
 }
 
 interface FilterState {
