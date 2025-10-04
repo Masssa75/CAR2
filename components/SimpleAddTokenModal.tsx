@@ -21,6 +21,7 @@ interface TokenCandidate {
   whitepaper?: string;
   marketCap?: number;
   confidence: number; // 0-100, how confident we are this is the right token
+  image?: string; // Token icon/logo URL
 }
 
 export function SimpleAddTokenModal({ isOpen, onClose, onSuccess }: SimpleAddTokenModalProps) {
@@ -222,33 +223,54 @@ export function SimpleAddTokenModal({ isOpen, onClose, onSuccess }: SimpleAddTok
 
           {/* Results */}
           {!isSearching && candidates.length > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-sm font-medium text-gray-700">Select a token:</p>
               {candidates.map((candidate, idx) => (
                 <button
                   key={`${candidate.source}-${candidate.id}-${idx}`}
                   onClick={() => setSelectedCandidate(candidate)}
-                  className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                  className={`w-full p-5 rounded-xl border-2 transition-all text-left hover:shadow-md ${
                     selectedCandidate?.id === candidate.id && selectedCandidate?.source === candidate.source
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-emerald-500 bg-emerald-50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="font-bold text-lg">{candidate.symbol}</div>
-                      <div className="text-sm text-gray-600">{candidate.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {candidate.isNative ? '🔷 Layer 1 Native Token' : `📝 ${candidate.network || 'Unknown'} Contract`}
+                  <div className="flex items-center gap-4">
+                    {/* Token Icon */}
+                    <div className="flex-shrink-0">
+                      {candidate.image ? (
+                        <img
+                          src={candidate.image}
+                          alt={candidate.symbol}
+                          className="w-12 h-12 rounded-full"
+                          onError={(e) => {
+                            // Fallback to initials if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-lg"
+                        style={{ display: candidate.image ? 'none' : 'flex' }}
+                      >
+                        {candidate.symbol.substring(0, 2).toUpperCase()}
                       </div>
-                      {candidate.website && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          🌐 {candidate.website}
-                        </div>
-                      )}
                     </div>
-                    <div className="text-xs text-gray-400">
-                      {candidate.source === 'coingecko' ? 'CoinGecko' : 'DexScreener'}
+
+                    {/* Token Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-xl text-gray-900">{candidate.symbol}</div>
+                      <div className="text-sm text-gray-500 truncate">{candidate.name}</div>
+                    </div>
+
+                    {/* Source Badge */}
+                    <div className="flex-shrink-0">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                        {candidate.source === 'coingecko' ? 'CoinGecko' : 'DexScreener'}
+                      </span>
                     </div>
                   </div>
                 </button>
@@ -281,10 +303,10 @@ export function SimpleAddTokenModal({ isOpen, onClose, onSuccess }: SimpleAddTok
           <button
             onClick={handleSubmit}
             disabled={!selectedCandidate || isSubmitting}
-            className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+            className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
               !selectedCandidate || isSubmitting
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white hover:from-emerald-500 hover:to-emerald-700 shadow-md hover:shadow-lg'
             }`}
           >
             {isSubmitting ? 'Adding Token...' : 'Add Token'}
@@ -346,6 +368,7 @@ async function searchCoinGecko(query: string): Promise<TokenCandidate[]> {
         network: details.isNativeToken ? undefined : Object.keys(details.platforms || {})[0],
         website: details.links?.website,
         whitepaper: details.links?.whitepaper,
+        image: details.image,
         confidence
       };
     })
