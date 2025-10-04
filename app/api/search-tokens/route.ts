@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     })) || [];
 
     // Sort results: exact symbol matches first, then by market cap rank
-    coins = coins.sort((a, b) => {
+    coins = coins.sort((a: any, b: any) => {
       const aExactMatch = a.symbol.toLowerCase() === query.toLowerCase();
       const bExactMatch = b.symbol.toLowerCase() === query.toLowerCase();
 
