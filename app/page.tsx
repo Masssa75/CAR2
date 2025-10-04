@@ -922,7 +922,7 @@ export default function HomePage() {
                 {project.analysis_errors && Object.keys(project.analysis_errors).length > 0 ? (
                   <div className="relative group">
                     <span className="text-red-500 cursor-help">⚠️</span>
-                    <div className="absolute bottom-full right-0 mb-2 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+                    <div className="absolute top-full right-0 mt-2 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
                       <div className="font-bold mb-2 text-red-300">Analysis Errors:</div>
                       {Object.entries(project.analysis_errors).map(([errorType, errorData]) => (
                         <div key={errorType} className="mb-2 last:mb-0">
