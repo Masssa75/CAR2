@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    // Return simplified results
-    const coins = data.coins?.slice(0, 15).map((coin: any) => ({
+    // Return simplified results (increased to 50 for better search coverage)
+    const coins = data.coins?.slice(0, 50).map((coin: any) => ({
       id: coin.id,
       symbol: coin.symbol,
       name: coin.name,

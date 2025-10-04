@@ -674,7 +674,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
 
               {/* Search Results */}
               {searchResults.length > 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
                   {searchResults.map((coin) => (
                     <button
                       key={coin.id}
