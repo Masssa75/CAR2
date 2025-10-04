@@ -404,10 +404,20 @@ async function searchDexScreener(query: string): Promise<TokenCandidate[]> {
 
     const networkMap: Record<string, string> = {
       'ethereum': 'ethereum',
-      'bsc': 'bsc',
-      'solana': 'solana',
+      'arbitrum': 'arbitrum',
+      'optimism': 'optimism',
       'base': 'base',
-      'pulse': 'pulsechain'
+      'polygon': 'polygon',
+      'avalanche': 'avalanche',
+      'bsc': 'bsc',
+      'fantom': 'fantom',
+      'solana': 'solana',
+      'sui': 'sui',
+      'pulse': 'pulsechain',
+      'pulsechain': 'pulsechain',
+      'zksync': 'zksync',
+      'linea': 'linea',
+      'scroll': 'scroll'
     };
 
     return [{

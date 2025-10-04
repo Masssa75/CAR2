@@ -26,13 +26,26 @@ export function isValidContractAddress(address: string, network: string): boolea
   
   const normalizedNetwork = network.toLowerCase();
   
-  // Solana uses base58 addresses
-  if (normalizedNetwork === 'solana') {
+  // Solana and Sui use base58 addresses
+  if (normalizedNetwork === 'solana' || normalizedNetwork === 'sui') {
     return isValidSolanaAddress(address);
   }
-  
-  // All EVM chains (Ethereum, BSC, Base, PulseChain) use 0x addresses
-  const evmNetworks = ['ethereum', 'eth', 'bsc', 'base', 'pulsechain', 'pulse'];
+
+  // All EVM chains use 0x addresses
+  const evmNetworks = [
+    'ethereum', 'eth',
+    'bsc', 'binance', 'bnb',
+    'base',
+    'pulsechain', 'pulse',
+    'arbitrum',
+    'avalanche', 'avax',
+    'polygon', 'matic',
+    'optimism',
+    'fantom', 'ftm',
+    'zksync',
+    'linea',
+    'scroll'
+  ];
   if (evmNetworks.includes(normalizedNetwork)) {
     return isValidEVMAddress(address);
   }
@@ -47,14 +60,14 @@ export function isValidContractAddress(address: string, network: string): boolea
  */
 export function normalizeContractAddress(address: string, network: string): string {
   const normalizedNetwork = network.toLowerCase();
-  
-  // EVM addresses should be lowercase for consistency
-  if (normalizedNetwork !== 'solana') {
-    return address.toLowerCase();
+
+  // Solana and Sui addresses are case-sensitive
+  if (normalizedNetwork === 'solana' || normalizedNetwork === 'sui') {
+    return address;
   }
-  
-  // Solana addresses are case-sensitive
-  return address;
+
+  // EVM addresses should be lowercase for consistency
+  return address.toLowerCase();
 }
 
 /**
@@ -62,10 +75,19 @@ export function normalizeContractAddress(address: string, network: string): stri
  */
 export const NETWORKS = {
   ethereum: { display: 'Ethereum', value: 'ethereum', dexscreener: 'ethereum' },
-  solana: { display: 'Solana', value: 'solana', dexscreener: 'solana' },
-  bsc: { display: 'BNB Chain', value: 'bsc', dexscreener: 'bsc' },
+  arbitrum: { display: 'Arbitrum', value: 'arbitrum', dexscreener: 'arbitrum' },
+  optimism: { display: 'Optimism', value: 'optimism', dexscreener: 'optimism' },
   base: { display: 'Base', value: 'base', dexscreener: 'base' },
-  pulsechain: { display: 'PulseChain', value: 'pulsechain', dexscreener: 'pulsechain' }
+  polygon: { display: 'Polygon', value: 'polygon', dexscreener: 'polygon' },
+  avalanche: { display: 'Avalanche', value: 'avalanche', dexscreener: 'avalanche' },
+  bsc: { display: 'BNB Chain', value: 'bsc', dexscreener: 'bsc' },
+  fantom: { display: 'Fantom', value: 'fantom', dexscreener: 'fantom' },
+  solana: { display: 'Solana', value: 'solana', dexscreener: 'solana' },
+  sui: { display: 'Sui', value: 'sui', dexscreener: 'sui' },
+  pulsechain: { display: 'PulseChain', value: 'pulsechain', dexscreener: 'pulsechain' },
+  zksync: { display: 'zkSync', value: 'zksync', dexscreener: 'zksync' },
+  linea: { display: 'Linea', value: 'linea', dexscreener: 'linea' },
+  scroll: { display: 'Scroll', value: 'scroll', dexscreener: 'scroll' }
 } as const;
 
 export type NetworkKey = keyof typeof NETWORKS;
@@ -77,15 +99,29 @@ export function normalizeNetwork(network: string): string {
   const mapping: Record<string, string> = {
     'ethereum': 'ethereum',
     'eth': 'ethereum',
-    'solana': 'solana',
-    'sol': 'solana',
+    'arbitrum': 'arbitrum',
+    'arb': 'arbitrum',
+    'optimism': 'optimism',
+    'op': 'optimism',
+    'base': 'base',
+    'polygon': 'polygon',
+    'matic': 'polygon',
+    'avalanche': 'avalanche',
+    'avax': 'avalanche',
     'bsc': 'bsc',
     'binance': 'bsc',
     'bnb': 'bsc',
-    'base': 'base',
+    'fantom': 'fantom',
+    'ftm': 'fantom',
+    'solana': 'solana',
+    'sol': 'solana',
+    'sui': 'sui',
     'pulsechain': 'pulsechain',
-    'pulse': 'pulsechain'
+    'pulse': 'pulsechain',
+    'zksync': 'zksync',
+    'linea': 'linea',
+    'scroll': 'scroll'
   };
-  
+
   return mapping[network.toLowerCase()] || network.toLowerCase();
 }
