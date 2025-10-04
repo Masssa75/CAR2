@@ -72,12 +72,12 @@ export default function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-  const [sortColumn, setSortColumn] = useState<SortColumn>('project_age_years');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortColumn, setSortColumn] = useState<SortColumn>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showFilters, setShowFilters] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showViewModeDropdown, setShowViewModeDropdown] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('gem');
+  const [viewMode, setViewMode] = useState<ViewMode>('latest');
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
   const [showAddWhitepaperModal, setShowAddWhitepaperModal] = useState(false);
@@ -87,8 +87,8 @@ export default function HomePage() {
   const [filters, setFilters] = useState<FilterState>({
     tokenType: 'all',
     websiteTiers: [],
-    whitepaperTiers: ['ALPHA'], // Default for Gem mode
-    maxAge: '5', // Default for Gem mode
+    whitepaperTiers: [],
+    maxAge: '',
     maxMcap: ''
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
