@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     // Return simplified results (increased to 50 for better search coverage)
-    const coins = data.coins?.slice(0, 50).map((coin: any) => ({
+    let coins = data.coins?.slice(0, 50).map((coin: any) => ({
       id: coin.id,
       symbol: coin.symbol,
       name: coin.name,
@@ -39,6 +39,23 @@ export async function GET(request: NextRequest) {
       // Add a flag to indicate if we need to fetch more data
       needsData: true
     })) || [];
+
+    // Sort results: exact symbol matches first, then by market cap rank
+    coins = coins.sort((a, b) => {
+      const aExactMatch = a.symbol.toLowerCase() === query.toLowerCase();
+      const bExactMatch = b.symbol.toLowerCase() === query.toLowerCase();
+
+      if (aExactMatch && !bExactMatch) return -1;
+      if (!aExactMatch && bExactMatch) return 1;
+
+      // Both exact or both not exact - sort by market cap rank
+      if (a.marketCapRank && b.marketCapRank) {
+        return a.marketCapRank - b.marketCapRank;
+      }
+      if (a.marketCapRank) return -1;
+      if (b.marketCapRank) return 1;
+      return 0;
+    });
 
     return NextResponse.json({ coins });
 
