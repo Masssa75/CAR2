@@ -259,10 +259,19 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
           // Map our network keys to CoinGecko's platform keys
           const networkToPlatformKey: Record<NetworkKey, string> = {
             ethereum: 'ethereum',
-            solana: 'solana',
-            bsc: 'binance-smart-chain',
+            arbitrum: 'arbitrum-one',
+            optimism: 'optimistic-ethereum',
             base: 'base',
-            pulsechain: 'pulsechain'
+            polygon: 'polygon-pos',
+            avalanche: 'avalanche',
+            bsc: 'binance-smart-chain',
+            fantom: 'fantom',
+            solana: 'solana',
+            sui: 'sui',
+            pulsechain: 'pulsechain',
+            zksync: 'zksync',
+            linea: 'linea',
+            scroll: 'scroll'
           };
 
           // Find the first available network we support
