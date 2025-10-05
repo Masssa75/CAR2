@@ -420,7 +420,7 @@ async function searchDexScreener(query: string): Promise<TokenCandidate[]> {
       'scroll': 'scroll'
     };
 
-    return [{
+    const candidate: TokenCandidate = {
       source: 'dexscreener',
       id: bestPair.baseToken.address,
       symbol: bestPair.baseToken.symbol,
@@ -430,7 +430,44 @@ async function searchDexScreener(query: string): Promise<TokenCandidate[]> {
       network: networkMap[bestPair.chainId] || bestPair.chainId,
       website: bestPair.info?.websites?.[0],
       confidence: bestPair.liquidity?.usd > 100000 ? 70 : 50
-    }];
+    };
+
+    // If DexScreener doesn't have a website, try CoinGecko as fallback
+    if (!candidate.website && bestPair.baseToken.symbol) {
+      try {
+        const response = await fetch(`/api/search-tokens?q=${encodeURIComponent(bestPair.baseToken.symbol)}`);
+        if (response.ok) {
+          const data = await response.json();
+          const coins = data.coins || [];
+          // Find exact symbol match
+          const coin = coins.find((c: any) => c.symbol?.toUpperCase() === bestPair.baseToken.symbol.toUpperCase());
+
+          if (coin?.id) {
+            // Fetch coin details
+            const detailsResponse = await fetch('/api/search-tokens', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coinId: coin.id })
+            });
+
+            if (detailsResponse.ok) {
+              const details = await detailsResponse.json();
+              if (details.links?.website) {
+                candidate.website = details.links.website;
+                console.log(`✅ Found website from CoinGecko for ${bestPair.baseToken.symbol}: ${details.links.website}`);
+              }
+              if (details.links?.whitepaper) {
+                candidate.whitepaper = details.links.whitepaper;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.log('Failed to fetch CoinGecko fallback data:', err);
+      }
+    }
+
+    return [candidate];
   } catch (err) {
     console.error('DexScreener search error:', err);
     return [];
