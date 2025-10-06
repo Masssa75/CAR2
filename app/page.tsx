@@ -47,6 +47,7 @@ interface Project {
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
   source?: 'manual' | 'coinmarketcap' | 'coingecko' | 'coingecko_top1000' | 'token_discovery' | 'api' | null;
+  created_at?: string;
   website_stage1_analysis?: {
     signals_found?: Signal[];
     red_flags?: RedFlag[];
@@ -863,11 +864,28 @@ export default function HomePage() {
                   <div className="font-bold text-base">{project.symbol}</div>
                   {(() => {
                     const badge = getSourceBadge(project.source);
-                    return badge ? (
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${badge.color}`}>
-                        {badge.label}
-                      </span>
-                    ) : null;
+                    if (!badge) return null;
+
+                    const createdDate = project.created_at
+                      ? new Date(project.created_at).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })
+                      : 'Unknown';
+
+                    return (
+                      <div className="relative group">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-help ${badge.color}`}>
+                          {badge.label}
+                        </span>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                          Ingested: {createdDate}
+                        </div>
+                      </div>
+                    );
                   })()}
                 </div>
                 <div className="text-sm text-gray-400">{project.name}</div>
