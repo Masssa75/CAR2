@@ -46,6 +46,7 @@ interface Project {
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
+  source?: 'manual' | 'coinmarketcap' | 'coingecko' | 'coingecko_top1000' | 'token_discovery' | 'api' | null;
   website_stage1_analysis?: {
     signals_found?: Signal[];
     red_flags?: RedFlag[];
@@ -392,6 +393,27 @@ export default function HomePage() {
     if (mcap >= 1000000000) return `$${(mcap / 1000000000).toFixed(1)}B`;
     if (mcap >= 1000000) return `$${(mcap / 1000000).toFixed(0)}M`;
     return `$${(mcap / 1000).toFixed(0)}K`;
+  }
+
+  function getSourceBadge(source: string | null | undefined): { label: string; color: string } | null {
+    if (!source) return null;
+
+    switch (source) {
+      case 'coinmarketcap':
+        return { label: 'CMC', color: 'bg-orange-100 text-orange-600' };
+      case 'coingecko':
+        return { label: 'CG', color: 'bg-green-100 text-green-600' };
+      case 'coingecko_top1000':
+        return { label: 'CG Top1K', color: 'bg-green-100 text-green-600' };
+      case 'manual':
+        return { label: 'Manual', color: 'bg-blue-100 text-blue-600' };
+      case 'token_discovery':
+        return { label: 'Discovery', color: 'bg-purple-100 text-purple-600' };
+      case 'api':
+        return { label: 'API', color: 'bg-gray-100 text-gray-600' };
+      default:
+        return null;
+    }
   }
 
   return (
@@ -837,7 +859,17 @@ export default function HomePage() {
               onClick={() => router.push(`/${project.symbol}`)}
             >
               <div>
-                <div className="font-bold text-base">{project.symbol}</div>
+                <div className="flex items-center gap-2">
+                  <div className="font-bold text-base">{project.symbol}</div>
+                  {(() => {
+                    const badge = getSourceBadge(project.source);
+                    return badge ? (
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${badge.color}`}>
+                        {badge.label}
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
                 <div className="text-sm text-gray-400">{project.name}</div>
               </div>
               <div className="flex items-start gap-1 justify-center pt-1" onClick={(e) => e.stopPropagation()}>
