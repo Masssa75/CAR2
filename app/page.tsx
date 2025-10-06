@@ -856,18 +856,22 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <div
               key={project.symbol}
-              className="grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 cursor-pointer transition-colors"
-              onClick={() => router.push(`/${project.symbol}`)}
+              className="grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
               <div>
                 <div className="flex items-center gap-2">
-                  <div className="font-bold text-base">{project.symbol}</div>
+                  <div
+                    className="font-bold text-base cursor-pointer hover:text-emerald-600 transition-colors"
+                    onClick={() => router.push(`/${project.symbol}`)}
+                  >
+                    {project.symbol}
+                  </div>
                   {(() => {
                     const badge = getSourceBadge(project.source);
                     if (!badge) return null;
 
                     const createdDate = project.created_at
-                      ? new Date(project.created_at).toLocaleString('en-US', {
+                      ? new Date(project.created_at).toLocaleString(undefined, {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
@@ -881,7 +885,7 @@ export default function HomePage() {
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-help ${badge.color}`}>
                           {badge.label}
                         </span>
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
                           Ingested: {createdDate}
                         </div>
                       </div>
