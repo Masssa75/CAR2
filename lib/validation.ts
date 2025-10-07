@@ -19,13 +19,27 @@ export function isValidSolanaAddress(address: string): boolean {
 }
 
 /**
+ * Validates a Bittensor subnet ID (numeric)
+ */
+export function isValidBittensorSubnetId(address: string): boolean {
+  // Bittensor uses numeric subnet IDs (0-999+)
+  const numericRegex = /^\d+$/;
+  return numericRegex.test(address);
+}
+
+/**
  * Validates a contract address based on the network
  */
 export function isValidContractAddress(address: string, network: string): boolean {
   if (!address || !network) return false;
-  
+
   const normalizedNetwork = network.toLowerCase();
-  
+
+  // Bittensor uses numeric subnet IDs
+  if (normalizedNetwork === 'bittensor') {
+    return isValidBittensorSubnetId(address);
+  }
+
   // Solana and Sui use base58 addresses
   if (normalizedNetwork === 'solana' || normalizedNetwork === 'sui') {
     return isValidSolanaAddress(address);
@@ -49,10 +63,10 @@ export function isValidContractAddress(address: string, network: string): boolea
   if (evmNetworks.includes(normalizedNetwork)) {
     return isValidEVMAddress(address);
   }
-  
+
   // Unknown network - be permissive but log warning
   console.warn(`Unknown network for validation: ${network}`);
-  return isValidEVMAddress(address) || isValidSolanaAddress(address);
+  return isValidEVMAddress(address) || isValidSolanaAddress(address) || isValidBittensorSubnetId(address);
 }
 
 /**
@@ -60,6 +74,11 @@ export function isValidContractAddress(address: string, network: string): boolea
  */
 export function normalizeContractAddress(address: string, network: string): string {
   const normalizedNetwork = network.toLowerCase();
+
+  // Bittensor subnet IDs are numeric - keep as-is
+  if (normalizedNetwork === 'bittensor') {
+    return address;
+  }
 
   // Solana and Sui addresses are case-sensitive
   if (normalizedNetwork === 'solana' || normalizedNetwork === 'sui') {
@@ -84,6 +103,7 @@ export const NETWORKS = {
   fantom: { display: 'Fantom', value: 'fantom', dexscreener: 'fantom' },
   solana: { display: 'Solana', value: 'solana', dexscreener: 'solana' },
   sui: { display: 'Sui', value: 'sui', dexscreener: 'sui' },
+  bittensor: { display: 'Bittensor', value: 'bittensor', dexscreener: null },
   pulsechain: { display: 'PulseChain', value: 'pulsechain', dexscreener: 'pulsechain' },
   zksync: { display: 'zkSync', value: 'zksync', dexscreener: 'zksync' },
   linea: { display: 'Linea', value: 'linea', dexscreener: 'linea' },
@@ -116,6 +136,7 @@ export function normalizeNetwork(network: string): string {
     'solana': 'solana',
     'sol': 'solana',
     'sui': 'sui',
+    'bittensor': 'bittensor',
     'pulsechain': 'pulsechain',
     'pulse': 'pulsechain',
     'zksync': 'zksync',

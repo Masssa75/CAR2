@@ -268,6 +268,7 @@ export function RankAddTokenModal({ isOpen, onClose, onSuccess }: AddTokenModalP
             fantom: 'fantom',
             solana: 'solana',
             sui: 'sui',
+            bittensor: 'bittensor',
             pulsechain: 'pulsechain',
             zksync: 'zksync',
             linea: 'linea',
