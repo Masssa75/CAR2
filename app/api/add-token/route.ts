@@ -104,8 +104,8 @@ async function fetchTokenDataFromDexScreener(contractAddress: string, network: s
     // Extract useful data
     const tokenData = {
       poolAddress: bestPair.pairAddress,
-      symbol: bestPair.baseToken.address.toLowerCase() === contractAddress.toLowerCase() 
-        ? bestPair.baseToken.symbol 
+      symbol: bestPair.baseToken.address.toLowerCase() === contractAddress.toLowerCase()
+        ? bestPair.baseToken.symbol
         : bestPair.quoteToken.symbol,
       name: bestPair.baseToken.address.toLowerCase() === contractAddress.toLowerCase()
         ? bestPair.baseToken.name
@@ -113,7 +113,8 @@ async function fetchTokenDataFromDexScreener(contractAddress: string, network: s
       website: null as string | null,
       twitter: null as string | null,
       telegram: null as string | null,
-      liquidity: bestPair.liquidity?.usd || 0
+      liquidity: bestPair.liquidity?.usd || 0,
+      market_cap: bestPair.marketCap || bestPair.fdv || null // Include market cap or FDV
     };
     
     // Extract social links if available
@@ -303,6 +304,20 @@ export async function POST(request: NextRequest) {
             { error: 'Token liquidity too low. Minimum $100 liquidity required.' },
             { status: 400 }
           );
+        }
+
+        // If DexScreener didn't provide market cap, try CoinGecko as fallback
+        if (!tokenData.market_cap && tokenData.symbol) {
+          console.log(`DexScreener has no market cap for ${tokenData.symbol}, trying CoinGecko...`);
+          try {
+            const cgData = await fetchNativeTokenFromCoinGecko(tokenData.symbol.toLowerCase());
+            if (cgData?.market_cap) {
+              tokenData.market_cap = cgData.market_cap;
+              console.log(`✅ Fetched market cap from CoinGecko: $${cgData.market_cap.toLocaleString()}`);
+            }
+          } catch (error) {
+            console.log(`Could not fetch CoinGecko market cap for ${tokenData.symbol}`);
+          }
         }
       }
     }
