@@ -31,7 +31,7 @@ function checkRateLimit(identifier: string): boolean {
   return true;
 }
 
-// Fetch native token data from CoinGecko (using CoinGecko ID)
+// Fetch native token data from CoinGecko
 async function fetchNativeTokenFromCoinGecko(coinGeckoId: string) {
   try {
     const response = await fetch(
@@ -62,72 +62,6 @@ async function fetchNativeTokenFromCoinGecko(coinGeckoId: string) {
     };
   } catch (error) {
     console.error('Error fetching from CoinGecko:', error);
-    return null;
-  }
-}
-
-// Fetch market cap from CoinGecko using symbol search
-async function fetchMarketCapFromCoinGecko(symbol: string): Promise<number | null> {
-  try {
-    // First, search for the coin by symbol
-    const searchResponse = await fetch(
-      `https://api.coingecko.com/api/v3/search?query=${symbol}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          ...(process.env.COINGECKO_API_KEY && {
-            'x-cg-demo-api-key': process.env.COINGECKO_API_KEY
-          })
-        }
-      }
-    );
-
-    if (!searchResponse.ok) {
-      console.error(`CoinGecko search API error: ${searchResponse.status}`);
-      return null;
-    }
-
-    const searchData = await searchResponse.json();
-    const coins = searchData?.coins || [];
-
-    // Find exact symbol match (case-insensitive)
-    const coin = coins.find((c: any) => c.symbol?.toUpperCase() === symbol.toUpperCase());
-
-    if (!coin?.id) {
-      console.log(`No CoinGecko match found for symbol ${symbol}`);
-      return null;
-    }
-
-    console.log(`Found CoinGecko ID for ${symbol}: ${coin.id}`);
-
-    // Fetch detailed coin data including market cap
-    const detailsResponse = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coin.id}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          ...(process.env.COINGECKO_API_KEY && {
-            'x-cg-demo-api-key': process.env.COINGECKO_API_KEY
-          })
-        }
-      }
-    );
-
-    if (!detailsResponse.ok) {
-      console.error(`CoinGecko details API error: ${detailsResponse.status}`);
-      return null;
-    }
-
-    const coinData = await detailsResponse.json();
-    const marketCap = coinData.market_data?.market_cap?.usd || null;
-
-    if (marketCap) {
-      console.log(`✅ Fetched market cap for ${symbol}: $${marketCap.toLocaleString()}`);
-    }
-
-    return marketCap;
-  } catch (error) {
-    console.error(`Error fetching market cap for ${symbol}:`, error);
     return null;
   }
 }
@@ -332,7 +266,16 @@ export async function POST(request: NextRequest) {
         console.log(`Using CoinGecko data for ${body.symbol} - skipping DexScreener validation`);
 
         // Try to fetch market cap from CoinGecko for this token
-        const cgMarketCap = await fetchMarketCapFromCoinGecko(body.symbol);
+        let cgMarketCap = null;
+        try {
+          const cgData = await fetchNativeTokenFromCoinGecko(body.symbol.toLowerCase());
+          if (cgData?.market_cap) {
+            cgMarketCap = cgData.market_cap;
+            console.log(`Fetched market cap from CoinGecko: $${cgMarketCap.toLocaleString()}`);
+          }
+        } catch (error) {
+          console.log(`Could not fetch CoinGecko market cap for ${body.symbol}`);
+        }
 
         tokenData = {
           poolAddress: null,
@@ -366,9 +309,14 @@ export async function POST(request: NextRequest) {
         // If DexScreener didn't provide market cap, try CoinGecko as fallback
         if (!tokenData.market_cap && tokenData.symbol) {
           console.log(`DexScreener has no market cap for ${tokenData.symbol}, trying CoinGecko...`);
-          const cgMarketCap = await fetchMarketCapFromCoinGecko(tokenData.symbol);
-          if (cgMarketCap) {
-            tokenData.market_cap = cgMarketCap;
+          try {
+            const cgData = await fetchNativeTokenFromCoinGecko(tokenData.symbol.toLowerCase());
+            if (cgData?.market_cap) {
+              tokenData.market_cap = cgData.market_cap;
+              console.log(`✅ Fetched market cap from CoinGecko: $${cgData.market_cap.toLocaleString()}`);
+            }
+          } catch (error) {
+            console.log(`Could not fetch CoinGecko market cap for ${tokenData.symbol}`);
           }
         }
       }
