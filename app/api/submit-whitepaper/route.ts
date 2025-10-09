@@ -72,34 +72,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Trigger whitepaper analysis
+    // Trigger whitepaper analysis asynchronously (fire-and-forget)
     const whitepaperFetcherUrl = `${supabaseUrl}/functions/v1/whitepaper-fetcher`;
 
-    try {
-      const fetchResponse = await fetch(whitepaperFetcherUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseServiceKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          projectId: project.id,
-          skipAnalysis: false
-        })
-      });
-
-      if (!fetchResponse.ok) {
-        console.error('Whitepaper fetcher error:', await fetchResponse.text());
-        // Don't fail the whole request if analysis fails - the URL/content is already saved
-      }
-    } catch (fetchError) {
+    // Don't await - let it run in background
+    fetch(whitepaperFetcherUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        projectId: project.id,
+        skipAnalysis: false
+      })
+    }).catch(fetchError => {
       console.error('Error triggering whitepaper analysis:', fetchError);
-      // Don't fail - we saved the URL/content successfully
-    }
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Whitepaper submitted successfully. Analysis in progress.'
+      message: 'Whitepaper submitted successfully. Analysis in progress.',
+      project_id: project.id
     });
   } catch (error) {
     console.error('API error:', error);
