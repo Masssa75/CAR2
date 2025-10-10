@@ -48,6 +48,7 @@ interface Project {
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
   source?: 'manual' | 'coinmarketcap' | 'coingecko' | 'coingecko_top1000' | 'token_discovery' | 'api' | null;
   created_at?: string;
+  is_featured?: boolean;
   website_stage1_analysis?: {
     signals_found?: Signal[];
     red_flags?: RedFlag[];
@@ -246,6 +247,39 @@ export default function HomePage() {
     } finally {
       setLoading(false);
       setLoadingMore(false);
+    }
+  }
+
+  async function toggleFeatured(symbol: string, isFeatured: boolean) {
+    try {
+      // Optimistic update
+      setProjects(prev =>
+        prev.map(p => p.symbol === symbol ? { ...p, is_featured: isFeatured } : p)
+      );
+
+      const response = await fetch('/api/toggle-featured', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol, is_featured: isFeatured })
+      });
+
+      const json = await response.json();
+
+      if (json.error) {
+        // Revert on error
+        setProjects(prev =>
+          prev.map(p => p.symbol === symbol ? { ...p, is_featured: !isFeatured } : p)
+        );
+        console.error('Error toggling featured:', json.error);
+        alert('Failed to update featured status');
+      }
+    } catch (error) {
+      console.error('Error toggling featured:', error);
+      // Revert on error
+      setProjects(prev =>
+        prev.map(p => p.symbol === symbol ? { ...p, is_featured: !isFeatured } : p)
+      );
+      alert('Failed to update featured status');
     }
   }
 
@@ -825,7 +859,8 @@ export default function HomePage() {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header */}
-            <div className="sticky top-0 z-10 grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 grid grid-cols-[0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <div className="text-center">★</div>
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
                 Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
@@ -856,8 +891,19 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <div
               key={project.symbol}
-              className="grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+              className="grid grid-cols-[0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
+              <div className="flex justify-center">
+                <input
+                  type="checkbox"
+                  checked={project.is_featured || false}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    toggleFeatured(project.symbol, !project.is_featured);
+                  }}
+                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                />
+              </div>
               <div>
                 <div className="flex items-center gap-2">
                   <div
