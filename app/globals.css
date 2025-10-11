@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* Fix span display for featured page - must come after Tailwind */
-span {
+/* Fix span display for filter labels only - must come after Tailwind */
+.flex.justify-between span {
   display: inline !important;
 }
 
