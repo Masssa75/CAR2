@@ -39,6 +39,7 @@ interface AnalysisError {
 }
 
 interface Project {
+  id: number;
   symbol: string;
   name: string;
   project_age_years: number | null;
@@ -250,17 +251,17 @@ export default function HomePage() {
     }
   }
 
-  async function toggleFeatured(symbol: string, isFeatured: boolean) {
+  async function toggleFeatured(id: number, isFeatured: boolean) {
     try {
       // Optimistic update
       setProjects(prev =>
-        prev.map(p => p.symbol === symbol ? { ...p, is_featured: isFeatured } : p)
+        prev.map(p => p.id === id ? { ...p, is_featured: isFeatured } : p)
       );
 
       const response = await fetch('/api/toggle-featured', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol, is_featured: isFeatured })
+        body: JSON.stringify({ id, is_featured: isFeatured })
       });
 
       const json = await response.json();
@@ -268,7 +269,7 @@ export default function HomePage() {
       if (json.error) {
         // Revert on error
         setProjects(prev =>
-          prev.map(p => p.symbol === symbol ? { ...p, is_featured: !isFeatured } : p)
+          prev.map(p => p.id === id ? { ...p, is_featured: !isFeatured } : p)
         );
         console.error('Error toggling featured:', json.error);
         alert('Failed to update featured status');
@@ -277,7 +278,7 @@ export default function HomePage() {
       console.error('Error toggling featured:', error);
       // Revert on error
       setProjects(prev =>
-        prev.map(p => p.symbol === symbol ? { ...p, is_featured: !isFeatured } : p)
+        prev.map(p => p.id === id ? { ...p, is_featured: !isFeatured } : p)
       );
       alert('Failed to update featured status');
     }
@@ -899,7 +900,7 @@ export default function HomePage() {
                   checked={project.is_featured || false}
                   onChange={(e) => {
                     e.stopPropagation();
-                    toggleFeatured(project.symbol, !project.is_featured);
+                    toggleFeatured(project.id, !project.is_featured);
                   }}
                   className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
                 />

@@ -8,10 +8,10 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { symbol, is_featured } = await request.json();
+    const { id, is_featured } = await request.json();
 
-    if (!symbol) {
-      return NextResponse.json({ error: 'Symbol is required' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     }
 
     if (typeof is_featured !== 'boolean') {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('crypto_projects_rated')
       .update({ is_featured })
-      .eq('symbol', symbol)
+      .eq('id', id)
       .select();
 
     if (error) {
