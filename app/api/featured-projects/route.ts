@@ -7,12 +7,12 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export const dynamic = 'force-dynamic';
 
 // Age mapping: 0=1mo, 1=6mo, 2=1y, 3=2y, 4=5y
-const ageToMonths: { [key: number]: number } = {
-  0: 1,
-  1: 6,
-  2: 12,
-  3: 24,
-  4: 60
+const ageToYears: { [key: number]: number } = {
+  0: 1/12,    // 1 month = 0.083 years
+  1: 0.5,     // 6 months = 0.5 years
+  2: 1,       // 1 year
+  3: 2,       // 2 years
+  4: 5        // 5 years
 };
 
 // Market cap mapping: 0=$10M, 1=$50M, 2=$100M, 3=$200M, 4=$500M, 5=$1B+
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       .select(`
         symbol,
         name,
-        age_months,
+        project_age_years,
         current_market_cap,
         website_stage1_tier,
         whitepaper_tier,
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         twitter_url
       `)
       .eq('is_featured', true)
-      .order('age_months', { ascending: true }); // Youngest first
+      .order('project_age_years', { ascending: true }); // Youngest first
 
     const { data, error } = await query;
 
@@ -63,13 +63,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter by age and market cap
-    const maxAgeMonths = ageToMonths[maxAge] || 60;
+    const maxAgeYears = ageToYears[maxAge] || 5;
     const maxMarketCap = mcapToValue[maxMcap] || Infinity;
 
     const filteredProjects = data
       .filter(project => {
         // Filter by age
-        if (project.age_months && project.age_months > maxAgeMonths) {
+        if (project.project_age_years && project.project_age_years > maxAgeYears) {
           return false;
         }
 
@@ -107,21 +107,20 @@ export async function GET(request: NextRequest) {
 
         // Format age
         let ageFormatted = 'Age unknown';
-        if (project.age_months !== null && project.age_months !== undefined) {
-          const months = project.age_months;
-          if (months < 1) {
+        if (project.project_age_years !== null && project.project_age_years !== undefined) {
+          const years = project.project_age_years;
+          if (years < 1/12) {
             ageFormatted = 'Less than 1 month old';
-          } else if (months === 1) {
-            ageFormatted = '1 month old';
-          } else if (months < 12) {
-            ageFormatted = `${Math.round(months)} months old`;
+          } else if (years < 1) {
+            const months = Math.round(years * 12);
+            ageFormatted = months === 1 ? '1 month old' : `${months} months old`;
           } else {
-            const years = Math.floor(months / 12);
-            const remainingMonths = Math.round(months % 12);
+            const wholeYears = Math.floor(years);
+            const remainingMonths = Math.round((years - wholeYears) * 12);
             if (remainingMonths === 0) {
-              ageFormatted = years === 1 ? '1 year old' : `${years} years old`;
+              ageFormatted = wholeYears === 1 ? '1 year old' : `${wholeYears} years old`;
             } else {
-              ageFormatted = `${years}y ${remainingMonths}mo old`;
+              ageFormatted = `${wholeYears}y ${remainingMonths}mo old`;
             }
           }
         }

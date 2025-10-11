@@ -14,7 +14,7 @@ interface SignalEvaluation {
 interface Project {
   symbol: string;
   name: string;
-  age_months: number;
+  project_age_years: number;
   current_market_cap: number;
   website_url: string;
   twitter_url: string;
@@ -124,17 +124,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
   const signals = project.website_stage1_analysis?.signal_evaluations || [];
 
   // Format age
-  const ageMonths = project.age_months || 0;
+  const ageYears = project.project_age_years || 0;
   let ageFormatted = 'Age unknown';
-  if (ageMonths < 12) {
-    ageFormatted = `${Math.round(ageMonths)} months old`;
+  if (ageYears < 1) {
+    const months = Math.round(ageYears * 12);
+    ageFormatted = months === 1 ? '1 month old' : `${months} months old`;
   } else {
-    const years = Math.floor(ageMonths / 12);
-    const remainingMonths = Math.round(ageMonths % 12);
+    const wholeYears = Math.floor(ageYears);
+    const remainingMonths = Math.round((ageYears - wholeYears) * 12);
     if (remainingMonths === 0) {
-      ageFormatted = years === 1 ? '1 year old' : `${years} years old`;
+      ageFormatted = wholeYears === 1 ? '1 year old' : `${wholeYears} years old`;
     } else {
-      ageFormatted = `${years}y ${remainingMonths}mo old`;
+      ageFormatted = `${wholeYears}y ${remainingMonths}mo old`;
     }
   }
 
