@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExternalLink, Twitter, Send, ChevronDown } from 'lucide-react';
-import './featured.css';
 
 interface Project {
   symbol: string;
