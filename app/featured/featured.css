@@ -1,20 +1,24 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  /* Reset */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    background: #fff;
+    color: #000;
+    line-height: 1.4;
+  }
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  background: #fff;
-  color: #000;
-  line-height: 1.4;
-}
-
-/* Fix span display issue */
-span {
-  display: inline !important;
+@layer utilities {
+  /* Fix span display issue - override Tailwind */
+  .max-w-\[420px\] span {
+    display: inline !important;
+  }
 }
 
 /* Slider styles */
