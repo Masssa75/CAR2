@@ -1,15 +1,14 @@
-@layer components {
-  /* Fix span display issue - override Tailwind base */
-  span {
-    display: inline !important;
-  }
+/* Body styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  background: #fff;
+  color: #000;
+  line-height: 1.4;
+}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-    background: #fff;
-    color: #000;
-    line-height: 1.4;
-  }
+/* Fix span display - load last to override Tailwind */
+span {
+  display: inline !important;
 }
 
 /* Slider styles */
