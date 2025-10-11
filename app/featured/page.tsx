@@ -62,21 +62,7 @@ export default function FeaturedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <style jsx global>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-          background: #fff;
-          color: #000;
-          line-height: 1.4;
-        }
-      `}</style>
-
+    <div className="min-h-screen bg-white font-sans">
       <div className="max-w-[420px] mx-auto">
         {/* Header */}
         <div className="px-4 pt-5 pb-4 border-b border-[#ddd] flex justify-between items-start">
@@ -231,7 +217,7 @@ export default function FeaturedPage() {
         )}
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .slider {
           -webkit-appearance: none;
           appearance: none;
@@ -261,7 +247,7 @@ export default function FeaturedPage() {
           border: none;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
         }
-      `}</style>
+      `}} />
     </div>
   );
 }
