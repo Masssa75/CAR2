@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExternalLink, Twitter, Send, ChevronDown } from 'lucide-react';
+import './featured.css';
 
 interface Project {
   symbol: string;
@@ -63,23 +64,6 @@ export default function FeaturedPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <style dangerouslySetInnerHTML={{__html: `
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-          background: #fff;
-          color: #000;
-          line-height: 1.4;
-        }
-        span {
-          display: inline !important;
-        }
-      `}} />
-
       <div className="max-w-[420px] mx-auto">
         {/* Header */}
         <div className="px-4 pt-5 pb-4 border-b border-[#ddd] flex justify-between items-start">
@@ -233,38 +217,6 @@ export default function FeaturedPage() {
           </div>
         )}
       </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        .slider {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 100%;
-          height: 3px;
-          background: #e5e5e5;
-          border-radius: 2px;
-          outline: none;
-        }
-        .slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 14px;
-          height: 14px;
-          background: #ff6600;
-          cursor: pointer;
-          border-radius: 50%;
-          border: none;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-        }
-        .slider::-moz-range-thumb {
-          width: 14px;
-          height: 14px;
-          background: #ff6600;
-          cursor: pointer;
-          border-radius: 50%;
-          border: none;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-        }
-      `}} />
     </div>
   );
 }
