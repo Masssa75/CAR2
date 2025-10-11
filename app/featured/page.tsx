@@ -123,10 +123,10 @@ export default function FeaturedPage() {
             {/* Age Filter */}
             <div className="mb-2">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
+                <span className="inline-block text-[9px] font-medium text-gray-400 uppercase tracking-wide">
                   Max Age
                 </span>
-                <span className="text-[9px] text-[#ff6600] font-semibold">
+                <span className="inline-block text-[9px] text-[#ff6600] font-semibold">
                   {ageLabels[ageFilter]}
                 </span>
               </div>
@@ -143,10 +143,10 @@ export default function FeaturedPage() {
             {/* Market Cap Filter */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
+                <span className="inline-block text-[9px] font-medium text-gray-400 uppercase tracking-wide">
                   Max Market Cap
                 </span>
-                <span className="text-[9px] text-[#ff6600] font-semibold">
+                <span className="inline-block text-[9px] text-[#ff6600] font-semibold">
                   {mcapLabels[mcapFilter]}
                 </span>
               </div>
