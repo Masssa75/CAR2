@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Fix span display for featured page - must come after Tailwind */
+span {
+  display: inline !important;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
