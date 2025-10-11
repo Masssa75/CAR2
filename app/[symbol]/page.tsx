@@ -19,6 +19,7 @@ interface Project {
   website_url: string;
   twitter_url: string;
   logo_url: string | null;
+  coingecko_id: string | null;
   website_stage1_tier: string;
   whitepaper_tier: string;
   website_stage1_analysis: {
@@ -149,9 +150,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
     mcapFormatted = `$${(mcap / 1_000_000).toFixed(1)}M market cap`;
   }
 
-  // Try to build TradingView chart URL
-  const tvSymbol = `BINANCE:${project.symbol}USDT`;
-  const chartUrl = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=D&hidesidetoolbar=1&hidetoptoolbar=0&symboledit=0&saveimage=0&toolbarbg=f1f3f6&theme=light&style=1&timezone=Etc/UTC`;
+  // Build CoinGecko chart URL if we have coingecko_id
+  const hasCoinGeckoChart = !!project.coingecko_id;
+  const coinGeckoChartUrl = project.coingecko_id
+    ? `https://www.coingecko.com/en/coins/${project.coingecko_id}`
+    : null;
 
   return (
     <div className="min-h-screen bg-white">
@@ -300,16 +303,28 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
           <h3 className="text-[11px] uppercase font-bold text-[#999] tracking-wide mb-3">
             Price Chart
           </h3>
-          <div className="h-[300px] rounded overflow-hidden bg-gray-50 border border-gray-200">
-            <iframe
-              src={chartUrl}
-              className="w-full h-full border-0"
-              title={`${project.symbol} price chart`}
-            />
-          </div>
-          <div className="text-[11px] text-gray-400 mt-2 text-center">
-            Chart not loading? Token may not be on TradingView
-          </div>
+          {hasCoinGeckoChart ? (
+            <>
+              <div className="h-[400px] rounded overflow-hidden bg-white border border-gray-200">
+                <iframe
+                  src={coinGeckoChartUrl!}
+                  className="w-full h-full border-0"
+                  title={`${project.symbol} price chart`}
+                  sandbox="allow-scripts allow-same-origin"
+                />
+              </div>
+              <div className="text-[11px] text-gray-400 mt-2 text-center">
+                Powered by CoinGecko
+              </div>
+            </>
+          ) : (
+            <div className="h-[200px] rounded bg-gray-50 border border-gray-200 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <div className="text-[13px] mb-1">Chart not available</div>
+                <div className="text-[11px]">Token not tracked on CoinGecko yet</div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Whitepaper Analysis */}
