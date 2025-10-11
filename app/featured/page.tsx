@@ -116,7 +116,7 @@ export default function FeaturedPage() {
           </div>
 
           <div
-            className={`transition-all duration-300 overflow-hidden ${
+            className={`overflow-hidden transition-all duration-300 ${
               filtersExpanded ? 'max-h-[200px] px-4 pb-3' : 'max-h-0 px-4'
             }`}
           >
