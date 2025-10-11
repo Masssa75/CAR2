@@ -116,48 +116,51 @@ export default function FeaturedPage() {
           </div>
 
           <div
-            className={`overflow-hidden transition-all duration-300 ${
-              filtersExpanded ? 'max-h-[200px] px-4 pb-3' : 'max-h-0 px-4'
+            className={`transition-all duration-300 ${
+              filtersExpanded ? 'max-h-[200px]' : 'max-h-0'
             }`}
+            style={{ overflow: 'hidden' }}
           >
-            {/* Age Filter */}
-            <div className="mb-2">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
-                  Max Age
-                </span>
-                <span className="text-[9px] text-[#ff6600] font-semibold">
-                  {ageLabels[ageFilter]}
-                </span>
+            <div className="px-4 pb-3">
+              {/* Age Filter */}
+              <div className="mb-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
+                    Max Age
+                  </span>
+                  <span className="text-[9px] text-[#ff6600] font-semibold">
+                    {ageLabels[ageFilter]}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="4"
+                  value={ageFilter}
+                  onChange={(e) => setAgeFilter(parseInt(e.target.value))}
+                  className="slider w-full"
+                />
               </div>
-              <input
-                type="range"
-                min="0"
-                max="4"
-                value={ageFilter}
-                onChange={(e) => setAgeFilter(parseInt(e.target.value))}
-                className="slider w-full"
-              />
-            </div>
 
-            {/* Market Cap Filter */}
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
-                  Max Market Cap
-                </span>
-                <span className="text-[9px] text-[#ff6600] font-semibold">
-                  {mcapLabels[mcapFilter]}
-                </span>
+              {/* Market Cap Filter */}
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
+                    Max Market Cap
+                  </span>
+                  <span className="text-[9px] text-[#ff6600] font-semibold">
+                    {mcapLabels[mcapFilter]}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="5"
+                  value={mcapFilter}
+                  onChange={(e) => setMcapFilter(parseInt(e.target.value))}
+                  className="slider w-full"
+                />
               </div>
-              <input
-                type="range"
-                min="0"
-                max="5"
-                value={mcapFilter}
-                onChange={(e) => setMcapFilter(parseInt(e.target.value))}
-                className="slider w-full"
-              />
             </div>
           </div>
         </div>
