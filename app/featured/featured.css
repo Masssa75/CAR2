@@ -1,9 +1,7 @@
-@layer base {
-  /* Reset */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+@layer components {
+  /* Fix span display issue - override Tailwind base */
+  span {
+    display: inline !important;
   }
 
   body {
@@ -11,13 +9,6 @@
     background: #fff;
     color: #000;
     line-height: 1.4;
-  }
-}
-
-@layer utilities {
-  /* Fix span display issue - override Tailwind */
-  .max-w-\[420px\] span {
-    display: inline !important;
   }
 }
 
