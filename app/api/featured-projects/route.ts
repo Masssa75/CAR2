@@ -25,6 +25,25 @@ const mcapToValue: { [key: number]: number } = {
   5: Infinity  // $1B+ means show all
 };
 
+// Tier scoring: ALPHA=5, BETA=4, GAMMA=3, DELTA=2, EPSILON=1, null=0
+const getTierScore = (tier: string | null): number => {
+  if (!tier) return 0;
+  const tierMap: { [key: string]: number } = {
+    'ALPHA': 5,
+    'BETA': 4,
+    'GAMMA': 3,
+    'DELTA': 2,
+    'EPSILON': 1
+  };
+  return tierMap[tier.toUpperCase()] || 0;
+};
+
+// Count ALPHA signals in website analysis
+const countAlphaSignals = (analysis: any): number => {
+  if (!analysis?.signals) return 0;
+  return analysis.signals.filter((s: any) => s.tier === 'ALPHA').length;
+};
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -49,8 +68,7 @@ export async function GET(request: NextRequest) {
         twitter_url,
         logo_url
       `)
-      .eq('is_featured', true)
-      .order('project_age_years', { ascending: true }); // Youngest first
+      .eq('is_featured', true);
 
     const { data, error } = await query;
 
@@ -80,6 +98,28 @@ export async function GET(request: NextRequest) {
         }
 
         return true;
+      })
+      // Calculate quality score and add to each project for sorting
+      .map(project => {
+        const websiteScore = getTierScore(project.website_stage1_tier);
+        const whitepaperScore = getTierScore(project.whitepaper_tier);
+        const alphaSignalsCount = countAlphaSignals(project.website_stage1_analysis);
+        const qualityScore = websiteScore + whitepaperScore + (alphaSignalsCount * 10);
+
+        return {
+          ...project,
+          qualityScore
+        };
+      })
+      // Sort by quality score (highest first), then by age (youngest first)
+      .sort((a, b) => {
+        if (b.qualityScore !== a.qualityScore) {
+          return b.qualityScore - a.qualityScore;
+        }
+        // Tiebreaker: younger projects first
+        const ageA = a.project_age_years || Infinity;
+        const ageB = b.project_age_years || Infinity;
+        return ageA - ageB;
       })
       .map(project => {
         // Extract top signal from website_stage1_analysis.strongest_signal
