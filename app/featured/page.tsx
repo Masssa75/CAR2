@@ -62,7 +62,24 @@ export default function FeaturedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className="min-h-screen bg-white">
+      <style dangerouslySetInnerHTML={{__html: `
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+          background: #fff;
+          color: #000;
+          line-height: 1.4;
+        }
+        span {
+          display: inline !important;
+        }
+      `}} />
+
       <div className="max-w-[420px] mx-auto">
         {/* Header */}
         <div className="px-4 pt-5 pb-4 border-b border-[#ddd] flex justify-between items-start">
@@ -109,10 +126,10 @@ export default function FeaturedPage() {
             {/* Age Filter */}
             <div className="mb-2">
               <div className="flex justify-between items-center mb-1">
-                <span style={{ display: 'inline' }} className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
+                <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
                   Max Age
                 </span>
-                <span style={{ display: 'inline' }} className="text-[9px] text-[#ff6600] font-semibold">
+                <span className="text-[9px] text-[#ff6600] font-semibold">
                   {ageLabels[ageFilter]}
                 </span>
               </div>
@@ -129,10 +146,10 @@ export default function FeaturedPage() {
             {/* Market Cap Filter */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span style={{ display: 'inline' }} className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
+                <span className="text-[9px] font-medium text-gray-400 uppercase tracking-wide">
                   Max Market Cap
                 </span>
-                <span style={{ display: 'inline' }} className="text-[9px] text-[#ff6600] font-semibold">
+                <span className="text-[9px] text-[#ff6600] font-semibold">
                   {mcapLabels[mcapFilter]}
                 </span>
               </div>
