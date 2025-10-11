@@ -156,11 +156,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
   return (
     <div className="min-h-screen bg-white">
       <style jsx global>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
           background: #fff;
