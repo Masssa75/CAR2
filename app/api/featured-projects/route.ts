@@ -40,11 +40,13 @@ export async function GET(request: NextRequest) {
         symbol,
         name,
         age_months,
-        market_cap,
-        website_tier,
+        current_market_cap,
+        website_stage1_tier,
         whitepaper_tier,
-        whitepaper_story_analysis,
-        website_tier_analysis
+        website_stage1_analysis,
+        one_liner,
+        website_url,
+        twitter_url
       `)
       .eq('is_featured', true)
       .order('age_months', { ascending: true }); // Youngest first
@@ -72,29 +74,26 @@ export async function GET(request: NextRequest) {
         }
 
         // Filter by market cap
-        if (project.market_cap && project.market_cap > maxMarketCap) {
+        if (project.current_market_cap && project.current_market_cap > maxMarketCap) {
           return false;
         }
 
         return true;
       })
       .map(project => {
-        // Extract top signal from website tier analysis
+        // Extract top signal from website_stage1_analysis.strongest_signal
         let topSignal = 'Quality project';
-        if (project.website_tier_analysis?.signals?.length > 0) {
-          topSignal = project.website_tier_analysis.signals[0];
+        if (project.website_stage1_analysis?.strongest_signal) {
+          topSignal = project.website_stage1_analysis.strongest_signal;
         }
 
-        // Generate short description from whitepaper analysis
-        let description = '';
-        if (project.whitepaper_story_analysis?.simple_description) {
-          description = project.whitepaper_story_analysis.simple_description;
-        }
+        // Use one_liner for short description (60 chars from website analyzer)
+        let description = project.one_liner || '';
 
         // Format market cap
         let marketCapFormatted = 'Market cap unknown';
-        if (project.market_cap) {
-          const mcap = project.market_cap;
+        if (project.current_market_cap) {
+          const mcap = project.current_market_cap;
           if (mcap >= 1_000_000_000) {
             marketCapFormatted = `$${(mcap / 1_000_000_000).toFixed(1)}B market cap`;
           } else if (mcap >= 1_000_000) {
@@ -134,8 +133,10 @@ export async function GET(request: NextRequest) {
           marketCap: marketCapFormatted,
           topSignal,
           description,
-          websiteTier: project.website_tier,
-          whitepaperTier: project.whitepaper_tier
+          websiteTier: project.website_stage1_tier,
+          whitepaperTier: project.whitepaper_tier,
+          websiteUrl: project.website_url,
+          twitterUrl: project.twitter_url
         };
       });
 
