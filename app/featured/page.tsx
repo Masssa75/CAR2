@@ -15,6 +15,7 @@ interface Project {
   whitepaperTier: string;
   websiteUrl: string;
   twitterUrl: string;
+  logoUrl: string | null;
 }
 
 const ageLabels = ['1mo', '6mo', '1y', '2y', '5y'];
@@ -165,8 +166,24 @@ export default function FeaturedPage() {
                 onClick={() => router.push(`/featured/${project.symbol}`)}
                 className="px-4 py-4 border-b border-[#eee] hover:bg-[#fafafa] active:bg-[#f6f6ef] cursor-pointer"
               >
-                {/* Name row with icons */}
-                <div className="flex items-center gap-2 mb-2.5">
+                {/* Name row with logo and icons */}
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  {/* Project Logo */}
+                  {project.logoUrl ? (
+                    <img
+                      src={project.logoUrl}
+                      alt={`${project.name} logo`}
+                      className="w-8 h-8 rounded-full flex-shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-gray-500">
+                      {project.symbol.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+
                   <div className="text-[15px] font-semibold text-black">
                     {project.name}
                   </div>

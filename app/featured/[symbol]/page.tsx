@@ -18,6 +18,7 @@ interface Project {
   current_market_cap: number;
   website_url: string;
   twitter_url: string;
+  logo_url: string | null;
   website_stage1_tier: string;
   whitepaper_tier: string;
   website_stage1_analysis: {
@@ -192,34 +193,54 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
 
         {/* Project Header */}
         <div className="px-4 py-4 border-b border-[#eee]">
-          <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-xl font-bold">{project.name}</h2>
-            <div className="flex gap-2">
-              {project.website_url && (
-                <a
-                  href={project.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-[#ff6600] transition-colors"
-                >
-                  <ExternalLink size={16} />
-                </a>
-              )}
-              {project.twitter_url && (
-                <a
-                  href={project.twitter_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-[#ff6600] transition-colors"
-                >
-                  <Twitter size={16} />
-                </a>
-              )}
+          <div className="flex items-center gap-3 mb-2">
+            {/* Project Logo */}
+            {project.logo_url ? (
+              <img
+                src={project.logo_url}
+                alt={`${project.name} logo`}
+                className="w-12 h-12 rounded-full flex-shrink-0"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-sm font-bold text-gray-500">
+                {project.symbol.substring(0, 2).toUpperCase()}
+              </div>
+            )}
+
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold">{project.name}</h2>
+                <div className="flex gap-2">
+                  {project.website_url && (
+                    <a
+                      href={project.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-[#ff6600] transition-colors"
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  )}
+                  {project.twitter_url && (
+                    <a
+                      href={project.twitter_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-[#ff6600] transition-colors"
+                    >
+                      <Twitter size={16} />
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div className="text-[13px] text-[#999] mt-1">
+                <span className="mr-3">{ageFormatted}</span>
+                <span>{mcapFormatted}</span>
+              </div>
             </div>
-          </div>
-          <div className="text-[13px] text-[#999]">
-            <span className="mr-3">{ageFormatted}</span>
-            <span>{mcapFormatted}</span>
           </div>
         </div>
 

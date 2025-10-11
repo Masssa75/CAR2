@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
         website_stage1_analysis,
         one_liner,
         website_url,
-        twitter_url
+        twitter_url,
+        logo_url
       `)
       .eq('is_featured', true)
       .order('project_age_years', { ascending: true }); // Youngest first
@@ -135,7 +136,8 @@ export async function GET(request: NextRequest) {
           websiteTier: project.website_stage1_tier,
           whitepaperTier: project.whitepaper_tier,
           websiteUrl: project.website_url,
-          twitterUrl: project.twitter_url
+          twitterUrl: project.twitter_url,
+          logoUrl: project.logo_url
         };
       });
 
