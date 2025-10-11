@@ -15,14 +15,14 @@ const ageToYears: { [key: number]: number } = {
   4: 5        // 5 years
 };
 
-// Market cap mapping: 0=$10M, 1=$50M, 2=$100M, 3=$200M, 4=$500M, 5=$1B+
+// Market cap mapping: 0=$10M, 1=$50M, 2=$100M, 3=$200M, 4=$500M, 5=$1B+ (no limit)
 const mcapToValue: { [key: number]: number } = {
   0: 10_000_000,
   1: 50_000_000,
   2: 100_000_000,
   3: 200_000_000,
   4: 500_000_000,
-  5: 1_000_000_000
+  5: Infinity  // $1B+ means show all
 };
 
 export async function GET(request: NextRequest) {
