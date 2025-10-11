@@ -150,13 +150,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
     mcapFormatted = `$${(mcap / 1_000_000).toFixed(1)}M market cap`;
   }
 
-  // Use CoinGecko widget - it will auto-match by symbol
-  const coinGeckoWidgetUrl = `https://www.coingecko.com/coins/${project.symbol.toLowerCase()}/usd`;
-
-  // Fallback: if we have coingecko_id, use that for more accuracy
-  const chartUrl = project.coingecko_id
+  // CoinGecko doesn't allow iframe embedding of their main site
+  // We'll use a link to view the chart instead
+  const coinGeckoUrl = project.coingecko_id
     ? `https://www.coingecko.com/en/coins/${project.coingecko_id}`
-    : coinGeckoWidgetUrl;
+    : `https://www.coingecko.com/en/coins/${project.symbol.toLowerCase()}`;
 
   return (
     <div className="min-h-screen bg-white">
@@ -300,21 +298,28 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
           )}
         </div>
 
-        {/* Chart Section */}
+        {/* Market Cap & Chart Link Section */}
         <div className="px-4 py-5 border-b border-[#eee]">
           <h3 className="text-[11px] uppercase font-bold text-[#999] tracking-wide mb-3">
-            Price Chart
+            Market Data
           </h3>
-          <div className="h-[400px] rounded overflow-hidden bg-white border border-gray-200">
-            <iframe
-              src={chartUrl}
-              className="w-full h-full border-0"
-              title={`${project.symbol} price chart`}
-              sandbox="allow-scripts allow-same-origin"
-            />
-          </div>
-          <div className="text-[11px] text-gray-400 mt-2 text-center">
-            Powered by CoinGecko • Chart not loading? Token may not be listed yet
+          <div className="bg-[#f6f6ef] rounded-lg p-4 border border-gray-200">
+            <div className="text-center mb-3">
+              <div className="text-[11px] text-[#999] uppercase tracking-wide mb-1">
+                Current Market Cap
+              </div>
+              <div className="text-[24px] font-bold text-[#333]">
+                {mcapFormatted}
+              </div>
+            </div>
+            <a
+              href={coinGeckoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-white border-2 border-[#8dc351] text-[#8dc351] text-center py-3 rounded-lg font-semibold hover:bg-[#8dc351] hover:text-white transition-colors"
+            >
+              View Interactive Chart on CoinGecko →
+            </a>
           </div>
         </div>
 
