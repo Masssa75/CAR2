@@ -8,13 +8,13 @@ interface MarketCapChartProps {
   currentMarketCap: number;
 }
 
-type TimeRange = '7' | '30' | '90' | '365' | 'max';
+type TimeRange = '7' | '30' | '90' | '180' | '365';
 
 export default function MarketCapChart({ coinGeckoId, currentMarketCap }: MarketCapChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
-  const [timeRange, setTimeRange] = useState<TimeRange>('max');
+  const [timeRange, setTimeRange] = useState<TimeRange>('365');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0); // Force rebuild v2
@@ -81,9 +81,8 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
     setError(null);
 
     try {
-      const days = timeRange === 'max' ? 'max' : timeRange;
+      const days = timeRange; // Use the timeRange directly (no 'max' option)
 
-      // Force rebuild to clear cached bundle
       console.log(`[MarketCapChart] Fetching data for CG ID: ${coinGeckoId}, days: ${days}`);
 
       const response = await fetch(
@@ -172,7 +171,7 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
 
       {/* Time Range Toggles */}
       <div className="flex gap-1 mb-3">
-        {(['7', '30', '90', '365', 'max'] as TimeRange[]).map((range) => (
+        {(['7', '30', '90', '180', '365'] as TimeRange[]).map((range) => (
           <button
             key={range}
             onClick={() => setTimeRange(range)}
@@ -182,7 +181,7 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
                 : 'bg-white text-[#999] hover:bg-[#e0e0e0]'
             }`}
           >
-            {range === 'max' ? 'MAX' : `${range}D`}
+            {range === '365' ? '1Y' : range === '180' ? '6M' : `${range}D`}
           </button>
         ))}
       </div>
