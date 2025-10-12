@@ -94,7 +94,7 @@ export default function MarketCapChart({ symbol, contractAddress, currentMarketC
       console.log(`[MarketCapChart] Fetching data for ${symbol} (CG ID: ${coinGeckoId}), days: ${days}`);
 
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`
+        `/api/coingecko-proxy?coinId=${encodeURIComponent(coinGeckoId)}&days=${days}`
       );
 
       console.log(`[MarketCapChart] Response status: ${response.status}`);
