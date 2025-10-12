@@ -82,6 +82,7 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
     try {
       const days = timeRange === 'max' ? 'max' : timeRange;
 
+      // Force rebuild to clear cached bundle
       console.log(`[MarketCapChart] Fetching data for CG ID: ${coinGeckoId}, days: ${days}`);
 
       const response = await fetch(
