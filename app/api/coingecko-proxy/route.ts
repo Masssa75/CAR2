@@ -18,15 +18,13 @@ export async function GET(request: NextRequest) {
       'Accept': 'application/json',
     };
 
-    // Use Pro API URL if we have an API key
-    const baseUrl = apiKey ? 'https://pro-api.coingecko.com' : 'https://api.coingecko.com';
-
+    // Use Demo API header (CoinGecko's free tier with API key)
     if (apiKey) {
-      headers['x-cg-pro-api-key'] = apiKey;
+      headers['x-cg-demo-api-key'] = apiKey;
     }
 
     const response = await fetch(
-      `${baseUrl}/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`,
+      `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`,
       { headers }
     );
 
