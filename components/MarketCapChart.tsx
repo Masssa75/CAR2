@@ -17,6 +17,7 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
   const [timeRange, setTimeRange] = useState<TimeRange>('max');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0); // Force rebuild v2
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
