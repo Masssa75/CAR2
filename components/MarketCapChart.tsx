@@ -91,19 +91,28 @@ export default function MarketCapChart({ symbol, contractAddress, currentMarketC
       const coinGeckoId = getCoinGeckoId();
       const days = timeRange === 'max' ? 'max' : timeRange;
 
+      console.log(`[MarketCapChart] Fetching data for ${symbol} (CG ID: ${coinGeckoId}), days: ${days}`);
+
       const response = await fetch(
         `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`
       );
 
+      console.log(`[MarketCapChart] Response status: ${response.status}`);
+
       if (!response.ok) {
-        throw new Error('Failed to fetch chart data');
+        const errorText = await response.text();
+        console.error(`[MarketCapChart] API error:`, errorText);
+        throw new Error(`Failed to fetch chart data: ${response.status}`);
       }
 
       const data = await response.json();
 
       if (!data.market_caps || data.market_caps.length === 0) {
+        console.error(`[MarketCapChart] No market cap data in response`);
         throw new Error('No market cap data available');
       }
+
+      console.log(`[MarketCapChart] Got ${data.market_caps.length} data points`);
 
       // Transform data for lightweight-charts
       const chartData = data.market_caps.map(([timestamp, value]: [number, number]) => ({
@@ -118,7 +127,7 @@ export default function MarketCapChart({ symbol, contractAddress, currentMarketC
 
       setLoading(false);
     } catch (err: any) {
-      console.error('Error fetching market cap data:', err);
+      console.error('[MarketCapChart] Error:', err);
       setError(err.message || 'Failed to load chart data');
       setLoading(false);
     }
