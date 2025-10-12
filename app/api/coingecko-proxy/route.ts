@@ -13,13 +13,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const apiKey = process.env.COINGECKO_API_KEY;
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+    };
+
+    if (apiKey) {
+      headers['x-cg-pro-api-key'] = apiKey;
+    }
+
     const response = await fetch(
       `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-        },
-      }
+      { headers }
     );
 
     if (!response.ok) {
