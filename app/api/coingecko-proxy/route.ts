@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     }
 
     const apiKey = process.env.COINGECKO_API_KEY;
-    console.log(`[CoinGecko Proxy] API key present: ${!!apiKey}, coinId: ${coinId}, days: ${days}`);
 
     const headers: Record<string, string> = {
       'Accept': 'application/json',
@@ -26,16 +25,10 @@ export async function GET(request: NextRequest) {
     // Use Demo API header (CoinGecko's free tier with API key)
     if (apiKey) {
       headers['x-cg-demo-api-key'] = apiKey;
-      console.log(`[CoinGecko Proxy] Added x-cg-demo-api-key header`);
-    } else {
-      console.warn(`[CoinGecko Proxy] WARNING: No API key found in environment`);
     }
 
     const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`;
-    console.log(`[CoinGecko Proxy] Fetching: ${url}`);
-
     const response = await fetch(url, { headers });
-    console.log(`[CoinGecko Proxy] Response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -47,7 +40,6 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log(`[CoinGecko Proxy] Success! Data points: ${data.market_caps?.length || 0}`);
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[CoinGecko Proxy] Error:', error);
