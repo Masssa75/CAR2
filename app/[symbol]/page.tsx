@@ -17,7 +17,6 @@ interface Project {
   name: string;
   project_age_years: number;
   current_market_cap: number;
-  contract_address: string;
   website_url: string;
   twitter_url: string;
   logo_url: string | null;
@@ -306,8 +305,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
             Market Data
           </h3>
           <MarketCapChart
-            symbol={project.symbol}
-            contractAddress={project.contract_address}
+            coinGeckoId={project.coingecko_id || project.symbol.toLowerCase()}
             currentMarketCap={project.current_market_cap}
           />
         </div>

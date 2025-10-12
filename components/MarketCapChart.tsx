@@ -4,29 +4,19 @@ import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, ISeriesApi } from 'lightweight-charts';
 
 interface MarketCapChartProps {
-  symbol: string;
-  contractAddress: string;
+  coinGeckoId: string;
   currentMarketCap: number;
 }
 
 type TimeRange = '7' | '30' | '90' | '365' | 'max';
 
-export default function MarketCapChart({ symbol, contractAddress, currentMarketCap }: MarketCapChartProps) {
+export default function MarketCapChart({ coinGeckoId, currentMarketCap }: MarketCapChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('max');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Extract CoinGecko ID from contract address
-  const getCoinGeckoId = (): string => {
-    if (contractAddress.startsWith('native:')) {
-      return contractAddress.replace('native:', '');
-    }
-    // For 0x addresses, fall back to symbol (lowercase)
-    return symbol.toLowerCase();
-  };
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -80,18 +70,19 @@ export default function MarketCapChart({ symbol, contractAddress, currentMarketC
   }, []);
 
   useEffect(() => {
-    fetchMarketCapData();
-  }, [timeRange, symbol, contractAddress]);
+    if (coinGeckoId) {
+      fetchMarketCapData();
+    }
+  }, [timeRange, coinGeckoId]);
 
   const fetchMarketCapData = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const coinGeckoId = getCoinGeckoId();
       const days = timeRange === 'max' ? 'max' : timeRange;
 
-      console.log(`[MarketCapChart] Fetching data for ${symbol} (CG ID: ${coinGeckoId}), days: ${days}`);
+      console.log(`[MarketCapChart] Fetching data for CG ID: ${coinGeckoId}, days: ${days}`);
 
       const response = await fetch(
         `/api/coingecko-proxy?coinId=${encodeURIComponent(coinGeckoId)}&days=${days}`
@@ -141,7 +132,7 @@ export default function MarketCapChart({ symbol, contractAddress, currentMarketC
 
   if (error) {
     // Fallback to CTA button
-    const coinGeckoUrl = `https://www.coingecko.com/en/coins/${getCoinGeckoId()}`;
+    const coinGeckoUrl = `https://www.coingecko.com/en/coins/${coinGeckoId}`;
 
     return (
       <div className="bg-[#f6f6ef] rounded-lg p-4 border border-gray-200">
