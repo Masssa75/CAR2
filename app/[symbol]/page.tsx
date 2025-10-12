@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ExternalLink, Twitter, Send } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import MarketCapChart from '@/components/MarketCapChart';
 
 interface SignalEvaluation {
   signal: string;
@@ -16,6 +17,7 @@ interface Project {
   name: string;
   project_age_years: number;
   current_market_cap: number;
+  contract_address: string;
   website_url: string;
   twitter_url: string;
   logo_url: string | null;
@@ -298,29 +300,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
           )}
         </div>
 
-        {/* Market Cap & Chart Link Section */}
+        {/* Market Cap Chart Section */}
         <div className="px-4 py-5 border-b border-[#eee]">
           <h3 className="text-[11px] uppercase font-bold text-[#999] tracking-wide mb-3">
             Market Data
           </h3>
-          <div className="bg-[#f6f6ef] rounded-lg p-4 border border-gray-200">
-            <div className="text-center mb-3">
-              <div className="text-[11px] text-[#999] uppercase tracking-wide mb-1">
-                Current Market Cap
-              </div>
-              <div className="text-[24px] font-bold text-[#333]">
-                {mcapFormatted}
-              </div>
-            </div>
-            <a
-              href={coinGeckoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full bg-white border-2 border-[#8dc351] text-[#8dc351] text-center py-3 rounded-lg font-semibold hover:bg-[#8dc351] hover:text-white transition-colors"
-            >
-              View Interactive Chart on CoinGecko →
-            </a>
-          </div>
+          <MarketCapChart
+            symbol={project.symbol}
+            contractAddress={project.contract_address}
+            currentMarketCap={project.current_market_cap}
+          />
         </div>
 
         {/* Whitepaper Analysis */}
