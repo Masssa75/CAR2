@@ -186,13 +186,14 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
       </div>
 
       {/* Chart */}
-      {loading ? (
-        <div className="h-[300px] flex items-center justify-center bg-white rounded">
-          <div className="text-[#999] text-sm">Loading chart...</div>
-        </div>
-      ) : (
-        <div ref={chartContainerRef} className="rounded overflow-hidden" />
-      )}
+      <div className="relative">
+        <div ref={chartContainerRef} className="rounded overflow-hidden" style={{ height: '300px' }} />
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white rounded">
+            <div className="text-[#999] text-sm">Loading chart...</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
