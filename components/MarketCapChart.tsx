@@ -8,13 +8,10 @@ interface MarketCapChartProps {
   currentMarketCap: number;
 }
 
-type TimeRange = '7' | '30' | '90' | '180' | '365';
-
 export default function MarketCapChart({ coinGeckoId, currentMarketCap }: MarketCapChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
-  const [timeRange, setTimeRange] = useState<TimeRange>('365');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,14 +70,14 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
     if (coinGeckoId) {
       fetchMarketCapData();
     }
-  }, [timeRange, coinGeckoId]);
+  }, [coinGeckoId]);
 
   const fetchMarketCapData = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const days = timeRange; // Use the timeRange directly (no 'max' option)
+      const days = '365'; // Always show 1 year (maximum for Demo API)
 
       console.log(`[MarketCapChart] Fetching data for CG ID: ${coinGeckoId}, days: ${days}`);
 
@@ -161,28 +158,11 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
       {/* Header */}
       <div className="flex justify-between items-center mb-3">
         <div className="text-[11px] text-[#999] uppercase tracking-wide">
-          Market Cap History
+          Market Cap - 1 Year
         </div>
         <div className="text-[13px] font-bold text-[#333]">
           {formatMarketCap(currentMarketCap)}
         </div>
-      </div>
-
-      {/* Time Range Toggles */}
-      <div className="flex gap-1 mb-3">
-        {(['7', '30', '90', '180', '365'] as TimeRange[]).map((range) => (
-          <button
-            key={range}
-            onClick={() => setTimeRange(range)}
-            className={`flex-1 py-1.5 text-[11px] font-semibold rounded transition-colors ${
-              timeRange === range
-                ? 'bg-[#059669] text-white'
-                : 'bg-white text-[#999] hover:bg-[#e0e0e0]'
-            }`}
-          >
-            {range === '365' ? '1Y' : range === '180' ? '6M' : `${range}D`}
-          </button>
-        ))}
       </div>
 
       {/* Chart */}
