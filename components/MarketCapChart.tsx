@@ -18,6 +18,20 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
+    // Format Y-axis labels to match current market cap format (e.g., "62M")
+    const formatYAxisLabel = (value: number): string => {
+      if (value >= 1_000_000_000) {
+        return `$${Math.round(value / 1_000_000_000)}B`;
+      }
+      if (value >= 1_000_000) {
+        return `$${Math.round(value / 1_000_000)}M`;
+      }
+      if (value >= 1_000) {
+        return `$${Math.round(value / 1_000)}K`;
+      }
+      return `$${Math.round(value)}`;
+    };
+
     // Create chart
     const chart = createChart(chartContainerRef.current, {
       layout: {
@@ -36,6 +50,9 @@ export default function MarketCapChart({ coinGeckoId, currentMarketCap }: Market
       },
       rightPriceScale: {
         borderColor: '#ddd',
+      },
+      localization: {
+        priceFormatter: formatYAxisLabel,
       },
     });
 
