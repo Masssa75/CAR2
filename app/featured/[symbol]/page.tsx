@@ -93,12 +93,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
         .select('*')
         .eq('symbol', symbol)
         .eq('is_featured', true)
-        .single();
+        .limit(1);
 
       if (error) throw error;
-      if (!data) throw new Error('Project not found');
+      if (!data || data.length === 0) throw new Error('Project not found');
 
-      setProject(data);
+      setProject(data[0]);
     } catch (err: any) {
       console.error('Error fetching project:', err);
       setError(err.message || 'Failed to load project');
