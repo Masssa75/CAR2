@@ -229,8 +229,8 @@ export default function HomePage() {
                 </div>
 
                 {/* Top Signal */}
-                <div className="text-[13px] text-white bg-[#059669] leading-[1.5] mb-2 px-3 py-2.5 rounded font-semibold break-words">
-                  ⚡ {project.topSignal}
+                <div className="text-[13px] text-[#1a1a1a] border-[1.5px] border-[#ff6600] bg-[#fff9f5] leading-[1.5] mb-2 px-3 py-2.5 rounded-md font-medium break-words">
+                  <span className="text-[#ff6600]">⚡</span> {project.topSignal}
                 </div>
 
                 {/* Description */}
