@@ -8,22 +8,53 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { id, is_featured } = await request.json();
+    const { id } = await request.json();
 
     if (!id) {
       return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     }
 
-    if (typeof is_featured !== 'boolean') {
-      return NextResponse.json({ error: 'is_featured must be a boolean' }, { status: 400 });
-    }
-
     // Use service role key for write operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // First, get the current state
+    const { data: currentProject, error: fetchError } = await supabase
+      .from('crypto_projects_rated')
+      .select('is_featured, maybe_featured')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !currentProject) {
+      console.error('Error fetching project:', fetchError);
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    // Tri-state cycling logic:
+    // Empty (false, false) → Maybe (false, true)
+    // Maybe (false, true) → Featured (true, false)
+    // Featured (true, false) → Empty (false, false)
+    let newIsFeatured = false;
+    let newMaybeFeatured = false;
+
+    if (!currentProject.is_featured && !currentProject.maybe_featured) {
+      // Empty → Maybe
+      newMaybeFeatured = true;
+    } else if (!currentProject.is_featured && currentProject.maybe_featured) {
+      // Maybe → Featured
+      newIsFeatured = true;
+    } else if (currentProject.is_featured && !currentProject.maybe_featured) {
+      // Featured → Empty
+      newIsFeatured = false;
+      newMaybeFeatured = false;
+    }
+
+    // Update the project
     const { data, error } = await supabase
       .from('crypto_projects_rated')
-      .update({ is_featured })
+      .update({
+        is_featured: newIsFeatured,
+        maybe_featured: newMaybeFeatured
+      })
       .eq('id', id)
       .select();
 

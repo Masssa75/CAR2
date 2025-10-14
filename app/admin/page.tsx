@@ -50,6 +50,7 @@ interface Project {
   source?: 'manual' | 'coinmarketcap' | 'coingecko' | 'coingecko_top1000' | 'token_discovery' | 'api' | null;
   created_at?: string;
   is_featured?: boolean;
+  maybe_featured?: boolean;
   is_dismissed?: boolean;
   website_stage1_analysis?: {
     signals_found?: Signal[];
@@ -258,35 +259,31 @@ export default function HomePage() {
     }
   }
 
-  async function toggleFeatured(id: number, isFeatured: boolean) {
+  async function toggleFeatured(id: number) {
     try {
-      // Optimistic update
-      setProjects(prev =>
-        prev.map(p => p.id === id ? { ...p, is_featured: isFeatured } : p)
-      );
-
       const response = await fetch('/api/toggle-featured', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, is_featured: isFeatured })
+        body: JSON.stringify({ id })
       });
 
       const json = await response.json();
 
       if (json.error) {
-        // Revert on error
-        setProjects(prev =>
-          prev.map(p => p.id === id ? { ...p, is_featured: !isFeatured } : p)
-        );
         console.error('Error toggling featured:', json.error);
         alert('Failed to update featured status');
+      } else {
+        // Update with the new state from server
+        setProjects(prev =>
+          prev.map(p => p.id === id ? {
+            ...p,
+            is_featured: json.project.is_featured,
+            maybe_featured: json.project.maybe_featured
+          } : p)
+        );
       }
     } catch (error) {
       console.error('Error toggling featured:', error);
-      // Revert on error
-      setProjects(prev =>
-        prev.map(p => p.id === id ? { ...p, is_featured: !isFeatured } : p)
-      );
       alert('Failed to update featured status');
     }
   }
@@ -502,17 +499,6 @@ export default function HomePage() {
             Coin<span className="text-emerald-500">Ai</span>Rank
           </div>
           <div className="flex gap-3 items-center">
-            {/* Hide Dismissed Toggle */}
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 transition-colors">
-              <input
-                type="checkbox"
-                checked={hideDismissed}
-                onChange={(e) => setHideDismissed(e.target.checked)}
-                className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
-              />
-              <span className="font-medium">Hide dismissed</span>
-            </label>
-
             <RankSearchInput onSearch={setSearchQuery} placeholder="Search symbol or name..." />
 
             {/* View Mode Dropdown */}
@@ -592,17 +578,29 @@ export default function HomePage() {
         {showMenu && (
           <>
             <div className="fixed inset-0 z-30" onClick={() => setShowMenu(false)} />
-            <div className="absolute top-16 right-5 z-40 bg-white border border-gray-200 rounded-lg shadow-lg w-48">
+            <div className="absolute top-16 right-5 z-40 bg-white border border-gray-200 rounded-lg shadow-lg w-56">
               <button
                 onClick={() => {
                   setShowMenu(false);
                   setShowAddTokenModal(true);
                 }}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-900"
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-900 border-b border-gray-100"
               >
                 <Plus className="w-4 h-4" />
                 Submit Project
               </button>
+              <label
+                className="w-full px-4 py-3 flex items-center gap-2 text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="checkbox"
+                  checked={hideDismissed}
+                  onChange={(e) => setHideDismissed(e.target.checked)}
+                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                />
+                <span className="text-sm font-medium">Hide dismissed</span>
+              </label>
             </div>
           </>
         )}
@@ -950,12 +948,25 @@ export default function HomePage() {
               <div className="flex justify-center">
                 <input
                   type="checkbox"
-                  checked={project.is_featured || false}
+                  checked={project.is_featured || project.maybe_featured || false}
                   onChange={(e) => {
                     e.stopPropagation();
-                    toggleFeatured(project.id, !project.is_featured);
+                    toggleFeatured(project.id);
                   }}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                  className={`w-4 h-4 rounded focus:ring-2 cursor-pointer transition-colors ${
+                    project.is_featured
+                      ? 'text-emerald-600 focus:ring-emerald-500'
+                      : project.maybe_featured
+                      ? 'text-orange-500 focus:ring-orange-400'
+                      : 'text-gray-300 focus:ring-gray-400'
+                  }`}
+                  title={
+                    project.is_featured
+                      ? 'Featured (shows on public page)'
+                      : project.maybe_featured
+                      ? 'Maybe (review later)'
+                      : 'Not reviewed'
+                  }
                 />
               </div>
               <div className="flex justify-center">
