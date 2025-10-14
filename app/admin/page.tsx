@@ -955,10 +955,10 @@ export default function HomePage() {
                   }}
                   className={`w-4 h-4 rounded focus:ring-2 cursor-pointer transition-colors ${
                     project.is_featured
-                      ? 'text-emerald-600 focus:ring-emerald-500'
+                      ? 'accent-emerald-600 focus:ring-emerald-500'
                       : project.maybe_featured
-                      ? 'text-orange-500 focus:ring-orange-400'
-                      : 'text-gray-300 focus:ring-gray-400'
+                      ? 'accent-orange-500 focus:ring-orange-400'
+                      : 'accent-gray-300 focus:ring-gray-400'
                   }`}
                   title={
                     project.is_featured
