@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Zap, Filter, Menu, Plus, Gem, Clock, List } from 'lucide-react';
+import { Zap, Filter, Menu, Plus, Gem, Clock, List, X } from 'lucide-react';
 import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
@@ -50,6 +50,7 @@ interface Project {
   source?: 'manual' | 'coinmarketcap' | 'coingecko' | 'coingecko_top1000' | 'token_discovery' | 'api' | null;
   created_at?: string;
   is_featured?: boolean;
+  is_dismissed?: boolean;
   website_stage1_analysis?: {
     signals_found?: Signal[];
     red_flags?: RedFlag[];
@@ -97,6 +98,7 @@ export default function HomePage() {
   const [selectedProject, setSelectedProject] = useState<{ symbol: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hideDismissed, setHideDismissed] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     tokenType: 'all',
     websiteTiers: [],
@@ -158,10 +160,10 @@ export default function HomePage() {
     filtersRef.current = filters;
   }, [filters]);
 
-  // Refetch when filters or sort changes
+  // Refetch when filters, sort, or hideDismissed changes
   useEffect(() => {
     fetchProjects(1, true);
-  }, [filters, sortColumn, sortDirection]);
+  }, [filters, sortColumn, sortDirection, hideDismissed]);
 
   async function fetchProjects(pageNum: number, reset: boolean = false) {
     try {
@@ -185,6 +187,11 @@ export default function HomePage() {
       const hasSearch = searchQuery.trim().length > 0;
       if (hasSearch) {
         params.append('search', searchQuery);
+      }
+
+      // Add hideDismissed filter
+      if (hideDismissed) {
+        params.append('hideDismissed', 'true');
       }
 
       // Add filters (only when NOT searching - search overrides all filters)
@@ -281,6 +288,40 @@ export default function HomePage() {
         prev.map(p => p.id === id ? { ...p, is_featured: !isFeatured } : p)
       );
       alert('Failed to update featured status');
+    }
+  }
+
+  async function toggleDismissed(id: number, isDismissed: boolean) {
+    try {
+      // Optimistic update - remove from list if hiding dismissed
+      if (isDismissed && hideDismissed) {
+        setProjects(prev => prev.filter(p => p.id !== id));
+      } else {
+        setProjects(prev =>
+          prev.map(p => p.id === id ? { ...p, is_dismissed: isDismissed } : p)
+        );
+      }
+
+      const response = await fetch('/api/toggle-dismissed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_dismissed: isDismissed })
+      });
+
+      const json = await response.json();
+
+      if (json.error) {
+        // Revert on error
+        console.error('Error toggling dismissed:', json.error);
+        alert('Failed to update dismissed status');
+        // Refetch to restore correct state
+        fetchProjects(1, true);
+      }
+    } catch (error) {
+      console.error('Error toggling dismissed:', error);
+      alert('Failed to update dismissed status');
+      // Refetch to restore correct state
+      fetchProjects(1, true);
     }
   }
 
@@ -460,7 +501,18 @@ export default function HomePage() {
           <div className="text-xl font-extrabold">
             Coin<span className="text-emerald-500">Ai</span>Rank
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            {/* Hide Dismissed Toggle */}
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 transition-colors">
+              <input
+                type="checkbox"
+                checked={hideDismissed}
+                onChange={(e) => setHideDismissed(e.target.checked)}
+                className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+              />
+              <span className="font-medium">Hide dismissed</span>
+            </label>
+
             <RankSearchInput onSearch={setSearchQuery} placeholder="Search symbol or name..." />
 
             {/* View Mode Dropdown */}
@@ -860,8 +912,9 @@ export default function HomePage() {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header */}
-            <div className="sticky top-0 z-10 grid grid-cols-[0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <div className="text-center">★</div>
+              <div className="text-center">✕</div>
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
                 Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
@@ -892,7 +945,7 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <div
               key={project.symbol}
-              className="grid grid-cols-[0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+              className="grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
               <div className="flex justify-center">
                 <input
@@ -904,6 +957,18 @@ export default function HomePage() {
                   }}
                   className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
                 />
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDismissed(project.id, true);
+                  }}
+                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
+                  title="Dismiss project"
+                >
+                  <X className="w-4 h-4" strokeWidth={2.5} />
+                </button>
               </div>
               <div>
                 <div className="flex items-center gap-2">

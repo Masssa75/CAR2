@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
     const websiteTiers = searchParams.get('websiteTiers'); // Comma-separated list
     const whitepaperTiers = searchParams.get('whitepaperTiers'); // Comma-separated list
     const projectId = searchParams.get('id'); // Add support for specific project ID
-    
+    const hideDismissed = searchParams.get('hideDismissed') === 'true'; // Admin filter
+
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     
     // If requesting a specific project by ID, return just that project
@@ -178,6 +179,11 @@ export async function GET(request: NextRequest) {
       if (tierList.length > 0) {
         query = query.in('whitepaper_tier', tierList);
       }
+    }
+
+    // Apply dismissed filter (admin only)
+    if (hideDismissed) {
+      query = query.eq('is_dismissed', false);
     }
 
     // Apply sorting
