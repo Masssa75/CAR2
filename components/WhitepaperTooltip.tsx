@@ -32,6 +32,7 @@ interface WhitepaperTooltipProps {
     tier_name?: string;
     quality_score?: number;
     explanation?: string;
+    determining_factor?: string;
   };
   whitepaperAnalyzedAt?: string;
   children: React.ReactNode;
