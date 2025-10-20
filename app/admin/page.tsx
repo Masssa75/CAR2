@@ -1048,7 +1048,7 @@ export default function HomePage() {
               <div className="text-sm text-gray-600 font-medium">{formatAge(project.project_age_years)}</div>
               <div className="text-sm text-gray-600 font-medium">{formatMcap(project.current_market_cap)}</div>
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                {project.website_stage1_tier && (
+                {project.website_stage1_tier ? (
                   <SignalBasedTooltip
                     projectSymbol={project.symbol}
                     signals={project.website_stage1_analysis?.signals_found}
@@ -1065,7 +1065,42 @@ export default function HomePage() {
                       {project.website_stage1_tier}
                     </span>
                   </SignalBasedTooltip>
-                )}
+                ) : project.analysis_errors && (
+                  project.analysis_errors.website_fetch ||
+                  project.analysis_errors.website_http_error ||
+                  project.analysis_errors.website_analysis
+                ) ? (
+                  <div className="relative group">
+                    <span className="text-amber-500 cursor-help text-lg">⚠️</span>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+                      <div className="font-bold mb-2 text-amber-300">Website Analysis Failed</div>
+                      {project.analysis_errors.website_fetch && (
+                        <div className="mb-2">
+                          <div className="text-gray-300">{project.analysis_errors.website_fetch.error}</div>
+                          <div className="text-gray-500 text-[10px] mt-0.5">
+                            {new Date(project.analysis_errors.website_fetch.failed_at).toLocaleString()}
+                          </div>
+                        </div>
+                      )}
+                      {project.analysis_errors.website_http_error && (
+                        <div className="mb-2">
+                          <div className="text-gray-300">{project.analysis_errors.website_http_error.error}</div>
+                          <div className="text-gray-500 text-[10px] mt-0.5">
+                            {new Date(project.analysis_errors.website_http_error.failed_at).toLocaleString()}
+                          </div>
+                        </div>
+                      )}
+                      {project.analysis_errors.website_analysis && (
+                        <div className="mb-2">
+                          <div className="text-gray-300">{project.analysis_errors.website_analysis.error}</div>
+                          <div className="text-gray-500 text-[10px] mt-0.5">
+                            {new Date(project.analysis_errors.website_analysis.failed_at).toLocaleString()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
               </div>
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 {project.whitepaper_tier ? (
@@ -1085,6 +1120,32 @@ export default function HomePage() {
                       {project.whitepaper_tier}
                     </span>
                   </WhitepaperTooltip>
+                ) : project.analysis_errors && (
+                  project.analysis_errors.whitepaper_fetch ||
+                  project.analysis_errors.whitepaper_analysis
+                ) ? (
+                  <div className="relative group">
+                    <span className="text-amber-500 cursor-help text-lg">⚠️</span>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+                      <div className="font-bold mb-2 text-amber-300">Whitepaper Analysis Failed</div>
+                      {project.analysis_errors.whitepaper_fetch && (
+                        <div className="mb-2">
+                          <div className="text-gray-300">{project.analysis_errors.whitepaper_fetch.error}</div>
+                          <div className="text-gray-500 text-[10px] mt-0.5">
+                            {new Date(project.analysis_errors.whitepaper_fetch.failed_at).toLocaleString()}
+                          </div>
+                        </div>
+                      )}
+                      {project.analysis_errors.whitepaper_analysis && (
+                        <div className="mb-2">
+                          <div className="text-gray-300">{project.analysis_errors.whitepaper_analysis.error}</div>
+                          <div className="text-gray-500 text-[10px] mt-0.5">
+                            {new Date(project.analysis_errors.whitepaper_analysis.failed_at).toLocaleString()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ) : (
                   <div className="relative group">
                     <span className="text-gray-300 text-xs cursor-help">—</span>
