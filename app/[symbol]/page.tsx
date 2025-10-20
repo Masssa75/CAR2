@@ -316,7 +316,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
             Whitepaper Analysis
           </h3>
 
-          {!analysis.simple_description ? (
+          {!analysis.vision_story && !analysis.innovation_story && !analysis.market_story &&
+           !analysis.team_story && !analysis.decentralization_story && !analysis.critical_flaw &&
+           !analysis.risk_story && !analysis.likely_outcome && !analysis.character_assessment &&
+           !analysis.simple_description ? (
             <div className="text-[13px] text-gray-500 italic">
               No whitepaper analysis available for this project.
             </div>
