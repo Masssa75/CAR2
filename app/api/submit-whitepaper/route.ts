@@ -56,9 +56,10 @@ export async function POST(request: NextRequest) {
         .from('whitepaper_content')
         .upsert({
           project_id: project.id,
-          raw_text: whitepaper_content,
-          content_type: 'text/plain',
-          fetch_method: 'manual_paste'
+          content: whitepaper_content,
+          content_length: whitepaper_content.length,
+          extraction_method: 'manual_paste',
+          extracted_at: new Date().toISOString()
         }, {
           onConflict: 'project_id'
         });
