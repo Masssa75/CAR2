@@ -220,32 +220,32 @@ export function WhitepaperTooltip({
           </button>
         )}
 
-        {/* Simple Description */}
-        {whitepaperStoryAnalysis?.simple_description && (
+        {/* Tier Assessment */}
+        {whitepaperPhase2Comparison?.explanation && (
           <div className="mb-4">
-            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">What it does:</h4>
+            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Assessment:</h4>
             <div className="text-sm text-gray-600 leading-relaxed">
-              {whitepaperStoryAnalysis.simple_description}
+              {whitepaperPhase2Comparison.explanation}
             </div>
-
-            {/* Tier Explanation */}
-            {whitepaperPhase2Comparison?.explanation && (
-              <div className="mt-4">
-                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Reasoning:</h4>
-                <div className="text-sm text-gray-600 leading-relaxed">
-                  {whitepaperPhase2Comparison.explanation}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Phase 2 Summary */}
-        {whitepaperPhase2Comparison?.summary && (
-          <div>
-            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Quality Assessment:</h4>
+        {/* Determining Factor */}
+        {whitepaperPhase2Comparison?.determining_factor && (
+          <div className="mb-4">
+            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Key Factor:</h4>
             <div className="text-sm text-gray-600 leading-relaxed">
-              {whitepaperPhase2Comparison.summary}
+              {whitepaperPhase2Comparison.determining_factor}
+            </div>
+          </div>
+        )}
+
+        {/* Vision Story */}
+        {whitepaperStoryAnalysis?.vision_story && (
+          <div className="mb-4">
+            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Vision:</h4>
+            <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+              {whitepaperStoryAnalysis.vision_story.replace(/##\s*$/g, '').trim()}
             </div>
           </div>
         )}
@@ -258,7 +258,7 @@ export function WhitepaperTooltip({
               className="text-xs text-emerald-500 hover:underline flex items-center gap-1"
             >
               <FileText className="w-3 h-3" />
-              How It Works
+              Full Analysis
             </a>
           </div>
         )}
