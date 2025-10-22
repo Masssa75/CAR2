@@ -171,6 +171,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate contractAddress is a string
+    if (typeof contractAddress !== 'string') {
+      return NextResponse.json(
+        { error: 'Contract address must be a valid string.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate network is a string
+    if (typeof network !== 'string') {
+      return NextResponse.json(
+        { error: 'Network must be a valid string.' },
+        { status: 400 }
+      );
+    }
+
     // Normalize network name
     const normalizedNetwork = normalizeNetwork(network);
     

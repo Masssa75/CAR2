@@ -402,6 +402,12 @@ async function searchDexScreener(query: string): Promise<TokenCandidate[]> {
       return (current.liquidity?.usd || 0) > (best.liquidity?.usd || 0) ? current : best;
     }, pairs[0]);
 
+    // Ensure we have a valid base token address
+    if (!bestPair.baseToken?.address) {
+      console.error('DexScreener pair missing baseToken.address:', bestPair);
+      return [];
+    }
+
     const networkMap: Record<string, string> = {
       'ethereum': 'ethereum',
       'arbitrum': 'arbitrum',
