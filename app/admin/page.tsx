@@ -62,6 +62,7 @@ interface Project {
   whitepaper_story_analysis?: any;
   whitepaper_phase2_comparison?: any;
   website_url?: string;
+  twitter_url?: string | null;
   coingecko_id?: string;
   analysis_errors?: {
     [key: string]: AnalysisError;
@@ -285,6 +286,30 @@ export default function HomePage() {
     } catch (error) {
       console.error('Error toggling featured:', error);
       alert('Failed to update featured status');
+    }
+  }
+
+  async function handleAnalyzeTwitter(symbol: string, twitterUrl: string) {
+    try {
+      // Extract handle from Twitter URL
+      const handle = twitterUrl.split('/').pop() || '';
+
+      const response = await fetch('/api/analyze-twitter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol, handle })
+      });
+
+      const json = await response.json();
+
+      if (json.error) {
+        alert(`Failed to analyze Twitter: ${json.error}`);
+      } else {
+        alert(json.message || 'Twitter analysis started! Results will be available in ~2 minutes.');
+      }
+    } catch (error) {
+      console.error('Error analyzing Twitter:', error);
+      alert('Failed to start Twitter analysis');
     }
   }
 
@@ -1183,10 +1208,16 @@ export default function HomePage() {
                   projectSymbol={project.symbol}
                   projectName={project.name}
                   hasWhitepaper={!!project.whitepaper_tier}
+                  twitterUrl={project.twitter_url}
                   onAddWhitepaper={() => {
                     setSelectedProject({ symbol: project.symbol, name: project.name });
                     setShowAddWhitepaperModal(true);
                   }}
+                  onAnalyzeTwitter={
+                    project.twitter_url
+                      ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
+                      : undefined
+                  }
                 />
               </div>
             </div>

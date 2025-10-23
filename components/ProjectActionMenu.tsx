@@ -1,22 +1,27 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreVertical, FileText } from 'lucide-react';
+import { MoreVertical, FileText, Twitter } from 'lucide-react';
 
 interface ProjectActionMenuProps {
   projectSymbol: string;
   projectName: string;
   hasWhitepaper: boolean;
+  twitterUrl?: string | null;
   onAddWhitepaper: () => void;
+  onAnalyzeTwitter?: () => void;
 }
 
 export function ProjectActionMenu({
   projectSymbol,
   projectName,
   hasWhitepaper,
-  onAddWhitepaper
+  twitterUrl,
+  onAddWhitepaper,
+  onAnalyzeTwitter
 }: ProjectActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,6 +43,19 @@ export function ProjectActionMenu({
   const handleAddWhitepaper = () => {
     setIsOpen(false);
     onAddWhitepaper();
+  };
+
+  const handleAnalyzeTwitter = async () => {
+    if (!onAnalyzeTwitter) return;
+
+    setIsAnalyzing(true);
+    setIsOpen(false);
+
+    try {
+      await onAnalyzeTwitter();
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -62,6 +80,17 @@ export function ProjectActionMenu({
             >
               <FileText className="w-4 h-4" />
               Add whitepaper
+            </button>
+          )}
+
+          {twitterUrl && onAnalyzeTwitter && (
+            <button
+              onClick={handleAnalyzeTwitter}
+              disabled={isAnalyzing}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Twitter className="w-4 h-4" />
+              {isAnalyzing ? 'Analyzing Twitter...' : 'Analyze Twitter'}
             </button>
           )}
 
