@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     // Call the Supabase edge function
     const response = await fetch(
-      `${process.env.SUPABASE_URL}/functions/v1/website-screenshot-capture`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/website-screenshot-capture`,
       {
         method: 'POST',
         headers: {
