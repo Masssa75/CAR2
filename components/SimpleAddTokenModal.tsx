@@ -453,6 +453,12 @@ async function searchDexScreener(query: string): Promise<TokenCandidate[]> {
       return [];
     }
 
+    // Extract website URL (DexScreener returns {label, url} objects)
+    const websiteData = bestPair.info?.websites?.[0];
+    const websiteUrl = typeof websiteData === 'object' && websiteData !== null && 'url' in websiteData
+      ? websiteData.url
+      : websiteData;
+
     const candidate: TokenCandidate = {
       source: 'dexscreener',
       id: bestPair.baseToken.address,
@@ -461,7 +467,7 @@ async function searchDexScreener(query: string): Promise<TokenCandidate[]> {
       isNative: false,
       contractAddress: bestPair.baseToken.address,
       network: network,
-      website: bestPair.info?.websites?.[0],
+      website: websiteUrl,
       confidence: bestPair.liquidity?.usd > 100000 ? 70 : 50
     };
 
