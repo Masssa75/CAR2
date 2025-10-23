@@ -18,6 +18,7 @@ function useAdminRedirect() {
 }
 
 interface Project {
+  id: number;
   symbol: string;
   name: string;
   age: string;
@@ -71,6 +72,7 @@ export default function HomePage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               url: project.websiteUrl,
+              tokenId: project.id,
               table: 'crypto_projects_rated'
             })
           });
@@ -80,7 +82,7 @@ export default function HomePage() {
             // Update the project in state with new screenshot URL
             setProjects(prevProjects =>
               prevProjects.map(p =>
-                p.symbol === project.symbol
+                p.id === project.id
                   ? { ...p, websiteScreenshotUrl: result.screenshot_url }
                   : p
               )

@@ -36,15 +36,32 @@ export function XSignalTooltip({
   const handleMouseEnter = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const tooltipWidth = 600;
       const tooltipHeight = 400; // Estimated max height
-      const spaceAbove = rect.top;
-      const spaceBelow = window.innerHeight - rect.bottom;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const padding = 20; // Padding from viewport edges
 
-      // Position below if not enough space above
+      // Vertical positioning
+      const spaceAbove = rect.top;
+      const spaceBelow = viewportHeight - rect.bottom;
       const positionBelow = spaceAbove < tooltipHeight && spaceBelow > spaceAbove;
 
+      // Horizontal positioning - prevent cutoff on left/right edges
+      let xPos = rect.left + rect.width / 2;
+      const halfTooltip = tooltipWidth / 2;
+
+      // Adjust if tooltip would go off left edge
+      if (xPos - halfTooltip < padding) {
+        xPos = halfTooltip + padding;
+      }
+      // Adjust if tooltip would go off right edge
+      else if (xPos + halfTooltip > viewportWidth - padding) {
+        xPos = viewportWidth - halfTooltip - padding;
+      }
+
       setPosition({
-        x: rect.left + rect.width / 2,
+        x: xPos,
         y: positionBelow ? rect.bottom : rect.top,
         positionBelow
       });
@@ -77,7 +94,8 @@ export function XSignalTooltip({
         transform: position.positionBelow
           ? 'translate(-50%, 20px)'
           : 'translate(-50%, calc(-100% - 20px))',
-        minWidth: '600px',
+        width: '600px',
+        maxWidth: 'calc(100vw - 40px)', // Ensure it doesn't exceed viewport width
         maxHeight: '80vh',
         overflowY: 'auto'
       }}

@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('crypto_projects_rated')
       .select(`
+        id,
         symbol,
         name,
         project_age_years,
@@ -168,6 +169,7 @@ export async function GET(request: NextRequest) {
         }
 
         return {
+          id: project.id,
           symbol: project.symbol,
           name: project.name,
           age: ageFormatted,
