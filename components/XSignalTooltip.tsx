@@ -50,6 +50,11 @@ export function XSignalTooltip({
 
   // Sort signals by date (newest first)
   const sortedSignals = [...signals].sort((a, b) => {
+    // Handle null/undefined dates
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1; // Move items without dates to end
+    if (!b.date) return -1;
+
     // Assuming dates are in format like "Oct 20", "Mar 6", etc.
     return b.date.localeCompare(a.date);
   });
