@@ -1101,34 +1101,28 @@ export default function HomePage() {
                     />
                   </div>
                 )}
-                {project.coingecko_id && (
-                  <a
-                    href={`https://www.coingecko.com/en/coins/${project.coingecko_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-emerald-600 transition-colors"
-                    title="View on CoinGecko"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </a>
-                )}
-              </div>
-              <div className="text-sm text-gray-600 font-medium">{formatAge(project.project_age_years)}</div>
-              <div>
-                <MarketCapTooltip
-                  coinGeckoId={project.coingecko_id}
-                  currentMarketCap={project.current_market_cap || 0}
-                >
-                  <div className="text-sm text-gray-600 font-medium">{formatMcap(project.current_market_cap)}</div>
-                </MarketCapTooltip>
                 <PlatformLinks
                   coinGeckoId={project.coingecko_id}
                   contractAddress={project.contract_address}
                   network={project.network}
-                  symbol={project.symbol}
                 />
+              </div>
+              <div className="text-sm text-gray-600 font-medium">{formatAge(project.project_age_years)}</div>
+              <div>
+                {project.coingecko_id ? (
+                  <MarketCapTooltip
+                    coinGeckoId={project.coingecko_id}
+                    currentMarketCap={project.current_market_cap || 0}
+                  >
+                    <div className="text-sm text-gray-600 font-medium cursor-help">
+                      {formatMcap(project.current_market_cap)}
+                    </div>
+                  </MarketCapTooltip>
+                ) : (
+                  <div className="text-sm text-gray-600 font-medium">
+                    {formatMcap(project.current_market_cap)}
+                  </div>
+                )}
               </div>
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 {project.website_stage1_tier ? (

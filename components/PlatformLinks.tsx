@@ -1,12 +1,9 @@
 'use client';
 
-import { ExternalLink } from 'lucide-react';
-
 interface PlatformLinksProps {
   coinGeckoId?: string | null;
   contractAddress?: string | null;
   network?: string | null;
-  symbol: string;
 }
 
 // Map CAR2 network names to GeckoTerminal network slugs
@@ -17,6 +14,7 @@ const NETWORK_MAP: Record<string, string> = {
   'polygon': 'polygon_pos',
   'avalanche': 'avax',
   'bnb': 'bsc',
+  'bsc': 'bsc',
   'fantom': 'ftm',
   'solana': 'solana',
   'sui': 'sui',
@@ -26,63 +24,67 @@ const NETWORK_MAP: Record<string, string> = {
   'scroll': 'scroll',
 };
 
+/**
+ * Platform links - icon-only design for cleaner UI
+ * Shows CoinGecko and GeckoTerminal links when available
+ */
 export function PlatformLinks({
   coinGeckoId,
   contractAddress,
-  network,
-  symbol
+  network
 }: PlatformLinksProps) {
-  const links: { name: string; url: string; icon: string; available: boolean }[] = [];
+  const links: { name: string; url: string; logo: string }[] = [];
 
-  // Priority 1: CoinGecko (if we have ID)
+  // CoinGecko (primary source - most reliable, 75% coverage)
   if (coinGeckoId) {
     links.push({
       name: 'CoinGecko',
       url: `https://www.coingecko.com/en/coins/${coinGeckoId}`,
-      icon: '🦎',
-      available: true
+      logo: 'https://static.coingecko.com/s/thumbnail-007177f3eca19695592f0b8b0eabbdae282b54154e1be912285c9034ea6cbaf2.png' // CoinGecko logo
     });
   }
 
-  // Priority 2: GeckoTerminal (if we have contract + network)
+  // GeckoTerminal (only if we have valid contract + network)
+  // Skip if contract has prefixes like "native:", "cg_", or network is "multi"/"native"/"other"
   if (contractAddress && network) {
+    const cleanContract = contractAddress.toLowerCase();
+    const isValidContract = !cleanContract.startsWith('native:') &&
+                           !cleanContract.startsWith('cg_') &&
+                           cleanContract.length > 20; // Reasonable contract address length
+
     const geckoNetwork = NETWORK_MAP[network.toLowerCase()];
-    if (geckoNetwork) {
+
+    if (isValidContract && geckoNetwork) {
+      // Use token URL instead of pool URL for better reliability
       links.push({
         name: 'GeckoTerminal',
-        url: `https://www.geckoterminal.com/${geckoNetwork}/pools/${contractAddress}`,
-        icon: '📊',
-        available: true
+        url: `https://www.geckoterminal.com/${geckoNetwork}/tokens/${contractAddress}`,
+        logo: 'https://assets.coingecko.com/markets/images/1029/small/geckoterminal.png' // GeckoTerminal logo
       });
     }
   }
 
-  // Priority 3: CoinMarketCap (fallback - symbol-based, less reliable)
-  const cmcSlug = symbol.toLowerCase().replace(/\s+/g, '-');
-  links.push({
-    name: 'CMC',
-    url: `https://coinmarketcap.com/currencies/${cmcSlug}`,
-    icon: '💎',
-    available: true
-  });
+  if (links.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-2 mt-1">
-      {links.map((link, index) => (
+    <>
+      {links.map((link) => (
         <a
           key={link.name}
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#ff6600] transition-colors"
+          className="text-gray-300 hover:text-emerald-600 transition-colors"
           title={`View on ${link.name}`}
         >
-          <span className="text-sm">{link.icon}</span>
-          <span className="font-medium">{link.name}</span>
-          <ExternalLink size={10} className="opacity-70" />
+          <img
+            src={link.logo}
+            alt={link.name}
+            className="w-3.5 h-3.5 opacity-70 hover:opacity-100"
+          />
         </a>
       ))}
-    </div>
+    </>
   );
 }
