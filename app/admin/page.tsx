@@ -7,6 +7,7 @@ import { Zap, Filter, Menu, Plus, Gem, Clock, List, X } from 'lucide-react';
 import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
+import { XSignalTooltip } from '@/components/XSignalTooltip';
 import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
 import { ProjectActionMenu } from '@/components/ProjectActionMenu';
 import { AddWhitepaperModal } from '@/components/AddWhitepaperModal';
@@ -64,6 +65,10 @@ interface Project {
   website_url?: string;
   twitter_url?: string | null;
   coingecko_id?: string;
+  x_tier?: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
+  x_score?: number | null;
+  x_signals_found?: any[];
+  x_analysis_summary?: string | null;
   analysis_errors?: {
     [key: string]: AnalysisError;
   };
@@ -1180,6 +1185,28 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
+
+              {/* X Tier */}
+              <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                {project.x_tier && project.x_signals_found && project.x_signals_found.length > 0 ? (
+                  <XSignalTooltip
+                    signals={project.x_signals_found}
+                    tier={project.x_tier}
+                    score={project.x_score || 0}
+                    summary={project.x_analysis_summary || undefined}
+                  >
+                    <span className={`px-2.5 py-1 rounded-md text-xs font-bold cursor-pointer ${
+                      project.x_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
+                      project.x_tier === 'SOLID' ? 'bg-amber-50 text-amber-600' :
+                      project.x_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {project.x_tier}
+                    </span>
+                  </XSignalTooltip>
+                ) : null}
+              </div>
+
               {/* Error Indicator */}
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 {project.analysis_errors && Object.keys(project.analysis_errors).length > 0 ? (
