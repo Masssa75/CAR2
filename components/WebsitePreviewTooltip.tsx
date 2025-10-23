@@ -18,7 +18,7 @@ export function WebsitePreviewTooltip({
 }: WebsitePreviewTooltipProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const handleMouseEnter = () => {
     // Delay tooltip appearance by 300ms
