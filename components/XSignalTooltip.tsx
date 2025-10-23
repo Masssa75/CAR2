@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Twitter } from 'lucide-react';
+import { Twitter, X } from 'lucide-react';
 
 interface XSignal {
   signal: string;
@@ -29,11 +29,31 @@ export function XSignalTooltip({
   children
 }: XSignalTooltipProps) {
   const [isVisible, setIsVisible] = React.useState(false);
+  const [isPersistent, setIsPersistent] = React.useState(false);
   const [position, setPosition] = React.useState({ x: 0, y: 0, positionBelow: false });
   const triggerRef = React.useRef<HTMLDivElement>(null);
   const tooltipRef = React.useRef<HTMLDivElement>(null);
 
+  // Handle click outside to close persistent tooltip
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isPersistent && tooltipRef.current && !tooltipRef.current.contains(event.target as Node) &&
+          triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+        setIsPersistent(false);
+        setIsVisible(false);
+      }
+    };
+
+    if (isPersistent) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPersistent]);
+
   const handleMouseEnter = () => {
+    if (isPersistent) return;
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const tooltipWidth = 600;
@@ -70,7 +90,13 @@ export function XSignalTooltip({
   };
 
   const handleMouseLeave = () => {
-    setIsVisible(false);
+    if (!isPersistent) {
+      setIsVisible(false);
+    }
+  };
+
+  const handleClick = () => {
+    setIsPersistent(!isPersistent);
   };
 
   // Sort signals by date (newest first)
@@ -87,25 +113,43 @@ export function XSignalTooltip({
   const tooltip = isVisible && (
     <div
       ref={tooltipRef}
-      className="fixed z-[9999] bg-white rounded-lg shadow-2xl border border-gray-200 p-6 max-w-2xl"
+      className={`fixed z-[999999] ${isPersistent ? 'pointer-events-auto' : 'pointer-events-none'}`}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
         transform: position.positionBelow
           ? 'translate(-50%, 20px)'
           : 'translate(-50%, calc(-100% - 20px))',
-        width: '600px',
-        maxWidth: 'calc(100vw - 40px)', // Ensure it doesn't exceed viewport width
-        maxHeight: '80vh',
-        overflowY: 'auto'
       }}
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={handleMouseLeave}
     >
+      <div
+        className="bg-white rounded-lg shadow-2xl border border-gray-200 p-6"
+        style={{
+          width: '600px',
+          maxWidth: 'calc(100vw - 40px)',
+          maxHeight: '60vh',
+          overflowY: 'auto'
+        }}
+      >
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 relative">
         <Twitter className="w-5 h-5 text-blue-500" />
         <h3 className="font-semibold text-gray-900">
           X/Twitter Analysis - {tier} ({score}/100)
         </h3>
+        {isPersistent && (
+          <button
+            onClick={() => {
+              setIsPersistent(false);
+              setIsVisible(false);
+            }}
+            className="absolute -top-2 -right-2 text-gray-400 hover:text-gray-700 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Summary */}
@@ -143,6 +187,7 @@ export function XSignalTooltip({
       {signals.length === 0 && (
         <p className="text-sm text-gray-500">No signals found</p>
       )}
+      </div>
     </div>
   );
 
@@ -152,7 +197,8 @@ export function XSignalTooltip({
         ref={triggerRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="inline-block"
+        onClick={handleClick}
+        className="inline-block cursor-pointer"
       >
         {children}
       </div>
