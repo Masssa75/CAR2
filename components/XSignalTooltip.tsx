@@ -29,16 +29,24 @@ export function XSignalTooltip({
   children
 }: XSignalTooltipProps) {
   const [isVisible, setIsVisible] = React.useState(false);
-  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+  const [position, setPosition] = React.useState({ x: 0, y: 0, positionBelow: false });
   const triggerRef = React.useRef<HTMLDivElement>(null);
   const tooltipRef = React.useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const tooltipHeight = 400; // Estimated max height
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      // Position below if not enough space above
+      const positionBelow = spaceAbove < tooltipHeight && spaceBelow > spaceAbove;
+
       setPosition({
         x: rect.left + rect.width / 2,
-        y: rect.top
+        y: positionBelow ? rect.bottom : rect.top,
+        positionBelow
       });
       setIsVisible(true);
     }
@@ -65,8 +73,11 @@ export function XSignalTooltip({
       className="fixed z-[9999] bg-white rounded-lg shadow-2xl border border-gray-200 p-6 max-w-2xl"
       style={{
         left: `${position.x}px`,
-        top: `${position.y - 20}px`,
-        transform: 'translate(-50%, -100%)',
+        top: `${position.y}px`,
+        transform: position.positionBelow
+          ? 'translate(-50%, 20px)'
+          : 'translate(-50%, calc(-100% - 20px))',
+        minWidth: '600px',
         maxHeight: '80vh',
         overflowY: 'auto'
       }}
