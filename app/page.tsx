@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExternalLink, Twitter, Send, ChevronDown } from 'lucide-react';
+import { WebsitePreviewTooltip } from '@/components/WebsitePreviewTooltip';
 
 // Domain-based routing: redirect Netlify visitors to /admin
 function useAdminRedirect() {
@@ -28,6 +29,7 @@ interface Project {
   websiteUrl: string;
   twitterUrl: string;
   logoUrl: string | null;
+  websiteScreenshotUrl: string | null;
 }
 
 const ageLabels = ['1mo', '6mo', '1y', '2y', '5y'];
@@ -55,6 +57,41 @@ export default function HomePage() {
   useEffect(() => {
     fetchProjects();
   }, [ageFilter, mcapFilter]);
+
+  // Auto-capture screenshots for projects without them
+  useEffect(() => {
+    if (!projects || projects.length === 0) return;
+
+    projects.forEach(async (project) => {
+      // Only trigger if project has website URL but no screenshot
+      if (!project.websiteScreenshotUrl && project.websiteUrl) {
+        try {
+          const response = await fetch('/api/capture-screenshot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: project.websiteUrl,
+              table: 'crypto_projects_rated'
+            })
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            // Update the project in state with new screenshot URL
+            setProjects(prevProjects =>
+              prevProjects.map(p =>
+                p.symbol === project.symbol
+                  ? { ...p, websiteScreenshotUrl: result.screenshot_url }
+                  : p
+              )
+            );
+          }
+        } catch (error) {
+          console.error(`Failed to capture screenshot for ${project.symbol}:`, error);
+        }
+      }
+    });
+  }, [projects]);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -204,15 +241,11 @@ export default function HomePage() {
                   </div>
                   <div className="flex gap-1.5">
                     {project.websiteUrl && (
-                      <a
-                        href={project.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-gray-400 hover:text-[#ff6600] transition-colors"
-                      >
-                        <ExternalLink size={14} />
-                      </a>
+                      <WebsitePreviewTooltip
+                        websiteUrl={project.websiteUrl}
+                        screenshotUrl={project.websiteScreenshotUrl}
+                        projectName={project.name}
+                      />
                     )}
                     {project.twitterUrl && (
                       <a

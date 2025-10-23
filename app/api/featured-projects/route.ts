@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
         one_liner,
         website_url,
         twitter_url,
-        logo_url
+        logo_url,
+        website_screenshot_url
       `)
       .eq('is_featured', true);
 
@@ -177,7 +178,8 @@ export async function GET(request: NextRequest) {
           whitepaperTier: project.whitepaper_tier,
           websiteUrl: project.website_url,
           twitterUrl: project.twitter_url,
-          logoUrl: project.logo_url
+          logoUrl: project.logo_url,
+          websiteScreenshotUrl: project.website_screenshot_url
         };
       });
 
