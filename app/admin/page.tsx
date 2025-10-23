@@ -9,6 +9,8 @@ import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
 import { XSignalTooltip } from '@/components/XSignalTooltip';
 import { WebsitePreviewTooltip } from '@/components/WebsitePreviewTooltip';
+import { MarketCapTooltip } from '@/components/MarketCapTooltip';
+import { PlatformLinks } from '@/components/PlatformLinks';
 import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
 import { ProjectActionMenu } from '@/components/ProjectActionMenu';
 import { AddWhitepaperModal } from '@/components/AddWhitepaperModal';
@@ -66,7 +68,10 @@ interface Project {
   website_url?: string;
   website_screenshot_url?: string | null;
   twitter_url?: string | null;
-  coingecko_id?: string;
+  coingecko_id?: string | null;
+  coinmarketcap_id?: string | null;
+  contract_address?: string | null;
+  network?: string | null;
   x_tier?: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   x_score?: number | null;
   x_signals_found?: any[];
@@ -1111,7 +1116,20 @@ export default function HomePage() {
                 )}
               </div>
               <div className="text-sm text-gray-600 font-medium">{formatAge(project.project_age_years)}</div>
-              <div className="text-sm text-gray-600 font-medium">{formatMcap(project.current_market_cap)}</div>
+              <div>
+                <MarketCapTooltip
+                  coinGeckoId={project.coingecko_id}
+                  currentMarketCap={project.current_market_cap || 0}
+                >
+                  <div className="text-sm text-gray-600 font-medium">{formatMcap(project.current_market_cap)}</div>
+                </MarketCapTooltip>
+                <PlatformLinks
+                  coinGeckoId={project.coingecko_id}
+                  contractAddress={project.contract_address}
+                  network={project.network}
+                  symbol={project.symbol}
+                />
+              </div>
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 {project.website_stage1_tier ? (
                   <SignalBasedTooltip
