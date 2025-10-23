@@ -955,7 +955,7 @@ export default function HomePage() {
               </div>
               <div className="text-center">Web</div>
               <div className="text-center">WP</div>
-              <div className="text-center"></div>
+              <div className="text-center">X</div>
               <div className="text-center"></div>
             </div>
 
