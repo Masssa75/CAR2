@@ -8,6 +8,7 @@ import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
 import { XSignalTooltip } from '@/components/XSignalTooltip';
+import { WebsitePreviewTooltip } from '@/components/WebsitePreviewTooltip';
 import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
 import { ProjectActionMenu } from '@/components/ProjectActionMenu';
 import { AddWhitepaperModal } from '@/components/AddWhitepaperModal';
@@ -63,6 +64,7 @@ interface Project {
   whitepaper_story_analysis?: any;
   whitepaper_phase2_comparison?: any;
   website_url?: string;
+  website_screenshot_url?: string | null;
   twitter_url?: string | null;
   coingecko_id?: string;
   x_tier?: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
@@ -131,6 +133,42 @@ export default function HomePage() {
   useEffect(() => {
     fetchProjects(1, true);
   }, []);
+
+  // Auto-capture screenshots for projects without them
+  useEffect(() => {
+    if (!projects || projects.length === 0) return;
+
+    projects.forEach(async (project) => {
+      // Only trigger if project has website URL but no screenshot
+      if (!project.website_screenshot_url && project.website_url) {
+        try {
+          const response = await fetch('/api/capture-screenshot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: project.website_url,
+              tokenId: project.id,
+              table: 'crypto_projects_rated'
+            })
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            // Update the project in state with new screenshot URL
+            setProjects(prevProjects =>
+              prevProjects.map(p =>
+                p.id === project.id
+                  ? { ...p, website_screenshot_url: result.screenshot_url }
+                  : p
+              )
+            );
+          }
+        } catch (error) {
+          console.error(`Failed to capture screenshot for ${project.symbol}:`, error);
+        }
+      }
+    });
+  }, [projects]);
 
   // Handle search with debounce
   useEffect(() => {
@@ -1050,17 +1088,13 @@ export default function HomePage() {
               </div>
               <div className="flex items-start gap-1 justify-center pt-1" onClick={(e) => e.stopPropagation()}>
                 {project.website_url && (
-                  <a
-                    href={project.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-emerald-600 transition-colors"
-                    title="Visit website"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                  </a>
+                  <div className="text-gray-300 hover:text-emerald-600 transition-colors">
+                    <WebsitePreviewTooltip
+                      websiteUrl={project.website_url}
+                      screenshotUrl={project.website_screenshot_url}
+                      projectName={project.name}
+                    />
+                  </div>
                 )}
                 {project.coingecko_id && (
                   <a
