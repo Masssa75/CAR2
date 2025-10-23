@@ -125,11 +125,30 @@ export function SimpleAddTokenModal({ isOpen, onClose, onSuccess }: SimpleAddTok
     setError(null);
 
     try {
+      // Validate required fields
+      const contractAddress = selectedCandidate.isNative
+        ? `native:${selectedCandidate.id}`
+        : selectedCandidate.contractAddress;
+
+      const network = selectedCandidate.network || 'ethereum';
+
+      // Ensure contractAddress is a valid string
+      if (!contractAddress || typeof contractAddress !== 'string') {
+        setError('Invalid contract address. Please try another token.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Ensure network is a valid string
+      if (!network || typeof network !== 'string') {
+        setError('Invalid network. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
       const payload: any = {
-        contractAddress: selectedCandidate.isNative
-          ? `native:${selectedCandidate.id}`
-          : selectedCandidate.contractAddress,
-        network: selectedCandidate.network || 'ethereum'
+        contractAddress,
+        network
       };
 
       // Include symbol and name if available (from CoinGecko)
@@ -172,7 +191,8 @@ export function SimpleAddTokenModal({ isOpen, onClose, onSuccess }: SimpleAddTok
 
     } catch (err) {
       console.error('Submit error:', err);
-      setError('Network error. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Network error. Please try again.';
+      setError(errorMessage);
       setIsSubmitting(false);
     }
   };
