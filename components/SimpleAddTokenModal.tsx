@@ -446,14 +446,21 @@ async function searchDexScreener(query: string): Promise<TokenCandidate[]> {
       'scroll': 'scroll'
     };
 
+    // Validate we have a network
+    const network = networkMap[bestPair.chainId?.toLowerCase()] || bestPair.chainId;
+    if (!network || typeof network !== 'string') {
+      console.error('DexScreener pair missing valid chainId:', bestPair);
+      return [];
+    }
+
     const candidate: TokenCandidate = {
       source: 'dexscreener',
       id: bestPair.baseToken.address,
-      symbol: bestPair.baseToken.symbol,
-      name: bestPair.baseToken.name,
+      symbol: bestPair.baseToken.symbol || 'UNKNOWN',
+      name: bestPair.baseToken.name || 'Unknown Token',
       isNative: false,
       contractAddress: bestPair.baseToken.address,
-      network: networkMap[bestPair.chainId] || bestPair.chainId,
+      network: network,
       website: bestPair.info?.websites?.[0],
       confidence: bestPair.liquidity?.usd > 100000 ? 70 : 50
     };
