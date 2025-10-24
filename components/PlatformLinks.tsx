@@ -26,7 +26,8 @@ const NETWORK_MAP: Record<string, string> = {
 
 /**
  * Platform links - icon-only design for cleaner UI
- * Shows CoinGecko and GeckoTerminal links when available
+ * Priority: CoinGecko (primary) → GeckoTerminal (fallback)
+ * Only shows fallback links when CoinGecko is NOT available
  */
 export function PlatformLinks({
   coinGeckoId,
@@ -35,18 +36,17 @@ export function PlatformLinks({
 }: PlatformLinksProps) {
   const links: { name: string; url: string; logo: string }[] = [];
 
-  // CoinGecko (primary source - most reliable, 75% coverage)
+  // CoinGecko (PRIMARY - most reliable, 75% coverage)
+  // If we have CoinGecko ID, ONLY show CoinGecko (skip fallbacks)
   if (coinGeckoId) {
     links.push({
       name: 'CoinGecko',
       url: `https://www.coingecko.com/en/coins/${coinGeckoId}`,
       logo: 'https://static.coingecko.com/s/thumbnail-007177f3eca19695592f0b8b0eabbdae282b54154e1be912285c9034ea6cbaf2.png' // CoinGecko logo
     });
-  }
-
-  // GeckoTerminal (only if we have valid contract + network)
-  // Skip if contract has prefixes like "native:", "cg_", or network is "multi"/"native"/"other"
-  if (contractAddress && network) {
+  } else if (contractAddress && network) {
+    // GeckoTerminal (FALLBACK - only if NO CoinGecko ID)
+    // Skip if contract has prefixes like "native:", "cg_", or network is "multi"/"native"/"other"
     const cleanContract = contractAddress.toLowerCase();
     const isValidContract = !cleanContract.startsWith('native:') &&
                            !cleanContract.startsWith('cg_') &&
