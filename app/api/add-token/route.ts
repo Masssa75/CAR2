@@ -54,6 +54,7 @@ async function fetchNativeTokenFromCoinGecko(coinGeckoId: string) {
     const data = await response.json();
 
     return {
+      coingecko_id: coinGeckoId,
       symbol: data.symbol?.toUpperCase() || coinGeckoId.toUpperCase(),
       name: data.name || coinGeckoId,
       website: data.links?.homepage?.[0] || null,
@@ -263,6 +264,7 @@ export async function POST(request: NextRequest) {
         website: websiteUrl || body.websiteUrl || coinGeckoData.website,
         liquidity: 1000000, // Native tokens don't need liquidity check
         market_cap: coinGeckoData.market_cap, // Include market cap from CoinGecko
+        coingecko_id: coinGeckoData.coingecko_id, // Store CoinGecko ID
         isNative: true
       };
 
@@ -281,12 +283,14 @@ export async function POST(request: NextRequest) {
       if (body.symbol && body.name && (websiteUrl || body.websiteUrl)) {
         console.log(`Using CoinGecko data for ${body.symbol} - skipping DexScreener validation`);
 
-        // Try to fetch market cap from CoinGecko for this token
+        // Try to fetch market cap and ID from CoinGecko for this token
         let cgMarketCap = null;
+        let cgId = null;
         try {
           const cgData = await fetchNativeTokenFromCoinGecko(body.symbol.toLowerCase());
           if (cgData?.market_cap) {
             cgMarketCap = cgData.market_cap;
+            cgId = cgData.coingecko_id;
             console.log(`Fetched market cap from CoinGecko: $${cgMarketCap.toLocaleString()}`);
           }
         } catch (error) {
@@ -300,6 +304,7 @@ export async function POST(request: NextRequest) {
           website: websiteUrl || body.websiteUrl,
           liquidity: 1000000, // Skip liquidity check for CoinGecko tokens
           market_cap: cgMarketCap, // Include market cap if found
+          coingecko_id: cgId, // Include CoinGecko ID if found
           isNative: false
         };
       } else {
@@ -329,6 +334,7 @@ export async function POST(request: NextRequest) {
             const cgData = await fetchNativeTokenFromCoinGecko(tokenData.symbol.toLowerCase());
             if (cgData?.market_cap) {
               tokenData.market_cap = cgData.market_cap;
+              tokenData.coingecko_id = cgData.coingecko_id; // Store CoinGecko ID
               console.log(`✅ Fetched market cap from CoinGecko: $${cgData.market_cap.toLocaleString()}`);
             }
           } catch (error) {
@@ -402,6 +408,7 @@ export async function POST(request: NextRequest) {
         network: isNativeToken ? 'other' : normalizedNetwork, // Native tokens use 'other' network
         symbol: tokenData.symbol,
         name: tokenData.name,
+        coingecko_id: tokenData.coingecko_id, // Pass CoinGecko ID if available
         pool_address: tokenData.poolAddress,
         website_url: tokenData.website || 'pending',
         whitepaper_url: normalizedWhitepaperUrl,
