@@ -1443,13 +1443,11 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Tiers */}
+              {/* Tiers - Always show all 3 */}
               <div className="flex flex-wrap gap-2 items-center">
-                <div className="text-xs text-gray-400 uppercase tracking-wide">Tiers:</div>
-
                 {/* Website Tier */}
-                {project.website_stage1_tier ? (
-                  <div onClick={(e) => e.stopPropagation()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  {project.website_stage1_tier ? (
                     <SignalBasedTooltip
                       projectSymbol={project.symbol}
                       signals={project.website_stage1_analysis?.signals_found}
@@ -1463,15 +1461,19 @@ export default function HomePage() {
                         project.website_stage1_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
                         'bg-gray-100 text-gray-600'
                       }`}>
-                        W:{project.website_stage1_tier}
+                        Web: {project.website_stage1_tier}
                       </span>
                     </SignalBasedTooltip>
-                  </div>
-                ) : null}
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-300 opacity-50">
+                      Web: N/A
+                    </span>
+                  )}
+                </div>
 
                 {/* Whitepaper Tier */}
-                {project.whitepaper_tier ? (
-                  <div onClick={(e) => e.stopPropagation()}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  {project.whitepaper_tier ? (
                     <WhitepaperTooltip
                       projectSymbol={project.symbol}
                       whitepaperTier={project.whitepaper_tier}
@@ -1485,15 +1487,19 @@ export default function HomePage() {
                         project.whitepaper_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
                         'bg-gray-100 text-gray-600'
                       }`}>
-                        P:{project.whitepaper_tier}
+                        Paper: {project.whitepaper_tier}
                       </span>
                     </WhitepaperTooltip>
-                  </div>
-                ) : null}
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-300 opacity-50">
+                      Paper: N/A
+                    </span>
+                  )}
+                </div>
 
-                {/* X Tier */}
-                {project.x_tier && project.x_signals_found && project.x_signals_found.length > 0 ? (
-                  <div onClick={(e) => e.stopPropagation()}>
+                {/* X/Twitter Tier */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  {project.x_tier && project.x_signals_found && project.x_signals_found.length > 0 ? (
                     <XSignalTooltip
                       signals={project.x_signals_found}
                       tier={project.x_tier}
@@ -1506,11 +1512,15 @@ export default function HomePage() {
                         project.x_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
                         'bg-gray-100 text-gray-600'
                       }`}>
-                        X:{project.x_tier}
+                        X: {project.x_tier}
                       </span>
                     </XSignalTooltip>
-                  </div>
-                ) : null}
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-300 opacity-50">
+                      X: N/A
+                    </span>
+                  )}
+                </div>
 
                 {/* Error Indicator */}
                 {project.analysis_errors && Object.keys(project.analysis_errors).length > 0 ? (
