@@ -209,8 +209,9 @@ export async function GET(request: NextRequest) {
     ];
 
     const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'website_stage1_score';
-    // Put nulls last when sorting by score (unanalyzed tokens go to the end)
-    const nullsFirst = sortColumn === 'website_stage1_score' ? false : sortOrder === 'desc';
+    // Put nulls last for data columns (show projects with data first)
+    const columnsWithNullsLast = ['website_stage1_score', 'total_volume', 'price_change_percentage_24h'];
+    const nullsFirst = columnsWithNullsLast.includes(sortColumn) ? false : sortOrder === 'desc';
     query = query.order(sortColumn, { ascending: sortOrder === 'asc', nullsFirst });
     
     // Apply pagination
