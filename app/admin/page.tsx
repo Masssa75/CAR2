@@ -1000,7 +1000,7 @@ export default function HomePage() {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header - Desktop Only */}
-            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <div className="text-center">★</div>
               <div className="text-center">✕</div>
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
@@ -1013,6 +1013,8 @@ export default function HomePage() {
               <div onClick={() => handleSort('current_market_cap')} className="cursor-pointer flex items-center gap-1">
                 MCap {!hotPicksActive && sortColumn === 'current_market_cap' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
+              <div className="text-center">Vol</div>
+              <div className="text-center">24h</div>
               <div className="text-center">Web</div>
               <div className="text-center">WP</div>
               <div className="text-center">X</div>
@@ -1034,7 +1036,7 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <React.Fragment key={project.symbol}>
               {/* Desktop Table Row */}
-              <div className="hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+              <div className="hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
               <div className="flex justify-center">
                 <input
@@ -1140,6 +1142,14 @@ export default function HomePage() {
                     {formatMcap(project.current_market_cap)}
                   </div>
                 )}
+              </div>
+              <div className="text-sm text-gray-600 font-medium text-center">
+                {formatVolume(project.total_volume)}
+              </div>
+              <div className="text-sm font-medium text-center">
+                <span className={formatPriceChange(project.price_change_percentage_24h).colorClass}>
+                  {formatPriceChange(project.price_change_percentage_24h).text}
+                </span>
               </div>
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 {project.website_stage1_tier ? (
