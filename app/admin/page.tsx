@@ -88,12 +88,11 @@ interface FilterState {
   tokenType: 'all' | 'utility' | 'meme' | 'stablecoin';
   websiteTiers: string[];
   whitepaperTiers: string[];
-  xTiers: string[];
   maxAge: string;
   maxMcap: string;
 }
 
-type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier' | 'created_at' | 'total_volume' | 'price_change_percentage_24h';
+type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier' | 'created_at';
 type SortDirection = 'asc' | 'desc';
 type ViewMode = 'gem' | 'latest' | 'all' | null;
 
@@ -121,7 +120,6 @@ export default function HomePage() {
     tokenType: 'all',
     websiteTiers: [],
     whitepaperTiers: [],
-    xTiers: [],
     maxAge: '',
     maxMcap: ''
   });
@@ -207,7 +205,6 @@ export default function HomePage() {
       (prevFilters.tokenType !== filters.tokenType ||
         JSON.stringify(prevFilters.websiteTiers) !== JSON.stringify(filters.websiteTiers) ||
         JSON.stringify(prevFilters.whitepaperTiers) !== JSON.stringify(filters.whitepaperTiers) ||
-        JSON.stringify(prevFilters.xTiers) !== JSON.stringify(filters.xTiers) ||
         prevFilters.maxAge !== filters.maxAge ||
         prevFilters.maxMcap !== filters.maxMcap)
     ) {
@@ -262,10 +259,6 @@ export default function HomePage() {
 
         if (filters.whitepaperTiers.length > 0) {
           params.append('whitepaperTiers', filters.whitepaperTiers.join(','));
-        }
-
-        if (filters.xTiers.length > 0) {
-          params.append('xTiers', filters.xTiers.join(','));
         }
 
         if (filters.maxAge) {
@@ -449,7 +442,6 @@ export default function HomePage() {
         tokenType: 'all',
         websiteTiers: [],
         whitepaperTiers: ['ALPHA'],
-        xTiers: [],
         maxAge: '5',
         maxMcap: ''
       });
@@ -461,7 +453,6 @@ export default function HomePage() {
         tokenType: 'all',
         websiteTiers: [],
         whitepaperTiers: [],
-        xTiers: [],
         maxAge: '',
         maxMcap: ''
       });
@@ -473,7 +464,6 @@ export default function HomePage() {
         tokenType: 'all',
         websiteTiers: [],
         whitepaperTiers: [],
-        xTiers: [],
         maxAge: '',
         maxMcap: ''
       });
@@ -528,7 +518,6 @@ export default function HomePage() {
     if (filters.tokenType !== 'all') count++;
     if (filters.websiteTiers.length > 0) count++;
     if (filters.whitepaperTiers.length > 0) count++;
-    if (filters.xTiers.length > 0) count++;
     if (filters.maxAge) count++;
     if (filters.maxMcap) count++;
     return count;
@@ -722,7 +711,6 @@ export default function HomePage() {
                     tokenType: 'all',
                     websiteTiers: [],
                     whitepaperTiers: [],
-                    xTiers: [],
                     maxAge: '',
                     maxMcap: ''
                   });
@@ -834,33 +822,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* X Tier */}
-            <div className="mb-6">
-              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">X Tier</div>
-              <div className="flex flex-col gap-2">
-                {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
-                  <button
-                    key={tier}
-                    onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        xTiers: prev.xTiers.includes(tier)
-                          ? prev.xTiers.filter(t => t !== tier)
-                          : [...prev.xTiers, tier]
-                      }));
-                    }}
-                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                      filters.xTiers.includes(tier)
-                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                        : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
-                    }`}
-                  >
-                    {tier}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Max Age and Max MCap */}
             <div className="space-y-4">
               <div>
@@ -900,7 +861,6 @@ export default function HomePage() {
                       tokenType: 'all',
                       websiteTiers: [],
                       whitepaperTiers: [],
-                      xTiers: [],
                       maxAge: '',
                       maxMcap: ''
                     });
@@ -1012,33 +972,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* X Tier */}
-              <div className="mb-4">
-                <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">X Tier</div>
-                <div className="flex gap-2 flex-wrap">
-                  {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
-                    <button
-                      key={tier}
-                      onClick={() => {
-                        setFilters(prev => ({
-                          ...prev,
-                          xTiers: prev.xTiers.includes(tier)
-                            ? prev.xTiers.filter(t => t !== tier)
-                            : [...prev.xTiers, tier]
-                        }));
-                      }}
-                      className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                        filters.xTiers.includes(tier)
-                          ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                          : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                      }`}
-                    >
-                      {tier}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Max Age and Max MCap */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1081,12 +1014,8 @@ export default function HomePage() {
               <div onClick={() => handleSort('current_market_cap')} className="cursor-pointer flex items-center gap-1">
                 MCap {!hotPicksActive && sortColumn === 'current_market_cap' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
-              <div onClick={() => handleSort('total_volume')} className="cursor-pointer flex items-center gap-1 justify-center">
-                Vol {sortColumn === 'total_volume' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
-              </div>
-              <div onClick={() => handleSort('price_change_percentage_24h')} className="cursor-pointer flex items-center gap-1 justify-center">
-                24h {sortColumn === 'price_change_percentage_24h' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
-              </div>
+              <div className="text-center">Vol</div>
+              <div className="text-center">24h</div>
               <div className="text-center">Web</div>
               <div className="text-center">WP</div>
               <div className="text-center">X</div>

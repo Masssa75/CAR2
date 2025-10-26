@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
     const maxMarketCap = searchParams.get('maxMarketCap') ? parseFloat(searchParams.get('maxMarketCap')!) : undefined;
     const websiteTiers = searchParams.get('websiteTiers'); // Comma-separated list
     const whitepaperTiers = searchParams.get('whitepaperTiers'); // Comma-separated list
-    const xTiers = searchParams.get('xTiers'); // Comma-separated list
     const projectId = searchParams.get('id'); // Add support for specific project ID
     const hideDismissed = searchParams.get('hideDismissed') === 'true'; // Admin filter
 
@@ -182,14 +181,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Apply X tier filters
-    if (xTiers) {
-      const tierList = xTiers.split(',').filter(t => t.trim());
-      if (tierList.length > 0) {
-        query = query.in('x_tier', tierList);
-      }
-    }
-
     // Apply dismissed filter (admin only)
     if (hideDismissed) {
       query = query.eq('is_dismissed', false);
@@ -203,15 +194,12 @@ export async function GET(request: NextRequest) {
       'roi_percent',
       'project_age_years',
       'created_at',
-      'website_stage1_analyzed_at',
-      'total_volume',
-      'price_change_percentage_24h'
+      'website_stage1_analyzed_at'
     ];
 
     const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'website_stage1_score';
-    // Put nulls last for data columns (show projects with data first)
-    const columnsWithNullsLast = ['website_stage1_score', 'total_volume', 'price_change_percentage_24h'];
-    const nullsFirst = columnsWithNullsLast.includes(sortColumn) ? false : sortOrder === 'desc';
+    // Put nulls last when sorting by score (unanalyzed tokens go to the end)
+    const nullsFirst = sortColumn === 'website_stage1_score' ? false : sortOrder === 'desc';
     query = query.order(sortColumn, { ascending: sortOrder === 'asc', nullsFirst });
     
     // Apply pagination
