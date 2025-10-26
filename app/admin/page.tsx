@@ -50,6 +50,7 @@ interface Project {
   current_market_cap: number | null;
   total_volume: number | null;
   price_change_percentage_24h: number | null;
+  image_url: string | null;
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
@@ -1076,6 +1077,16 @@ export default function HomePage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
+                  {project.image_url && (
+                    <img
+                      src={project.image_url}
+                      alt={project.symbol}
+                      className="w-6 h-6 rounded-full"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
                   <div
                     className="font-bold text-base cursor-pointer hover:text-emerald-600 transition-colors"
                     onClick={() => router.push(`/${project.symbol}`)}
@@ -1383,6 +1394,16 @@ export default function HomePage() {
               {/* Project Info */}
               <div className="mb-3 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0">
+                  {project.image_url && (
+                    <img
+                      src={project.image_url}
+                      alt={project.symbol}
+                      className="w-7 h-7 rounded-full flex-shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
                   <div
                     className="text-lg font-bold cursor-pointer hover:text-emerald-600 transition-colors"
                     onClick={() => router.push(`/${project.symbol}`)}
