@@ -48,6 +48,8 @@ interface Project {
   name: string;
   project_age_years: number | null;
   current_market_cap: number | null;
+  total_volume: number | null;
+  price_change_percentage_24h: number | null;
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
