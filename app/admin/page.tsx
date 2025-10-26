@@ -542,6 +542,21 @@ export default function HomePage() {
     return `$${(mcap / 1000).toFixed(0)}K`;
   }
 
+  function formatVolume(volume: number | null): string {
+    if (!volume) return '—';
+    if (volume >= 1000000000) return `$${(volume / 1000000000).toFixed(1)}B`;
+    if (volume >= 1000000) return `$${(volume / 1000000).toFixed(0)}M`;
+    if (volume >= 1000) return `$${(volume / 1000).toFixed(0)}K`;
+    return `$${volume.toFixed(0)}`;
+  }
+
+  function formatPriceChange(change: number | null): { text: string; colorClass: string } {
+    if (change === null || change === undefined) return { text: '—', colorClass: 'text-gray-500' };
+    const sign = change >= 0 ? '+' : '';
+    const colorClass = change >= 0 ? 'text-emerald-600' : 'text-red-600';
+    return { text: `${sign}${change.toFixed(2)}%`, colorClass };
+  }
+
   function getSourceBadge(source: string | null | undefined): { label: string; color: string } | null {
     if (!source) return null;
 
@@ -1408,12 +1423,21 @@ export default function HomePage() {
               </div>
 
               {/* Meta Info */}
-              <div className="flex gap-4 text-sm text-gray-600 mb-3">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600 mb-3">
                 <div>
                   <span className="text-gray-400">Age:</span> {formatAge(project.project_age_years)}
                 </div>
                 <div>
                   <span className="text-gray-400">MCap:</span> {formatMcap(project.current_market_cap)}
+                </div>
+                <div>
+                  <span className="text-gray-400">Vol:</span> {formatVolume(project.total_volume)}
+                </div>
+                <div>
+                  <span className="text-gray-400">24h:</span>{' '}
+                  <span className={formatPriceChange(project.price_change_percentage_24h).colorClass}>
+                    {formatPriceChange(project.price_change_percentage_24h).text}
+                  </span>
                 </div>
               </div>
 
