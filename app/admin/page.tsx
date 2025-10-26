@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { Zap, Filter, Menu, Plus, Gem, Clock, List, X } from 'lucide-react';
@@ -982,8 +982,8 @@ export default function HomePage() {
 
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
-            {/* List Header */}
-            <div className="sticky top-0 z-10 grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            {/* List Header - Desktop Only */}
+            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <div className="text-center">★</div>
               <div className="text-center">✕</div>
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
@@ -1015,9 +1015,9 @@ export default function HomePage() {
       ) : (
         <div>
           {sortedProjects.map((project) => (
-            <div
-              key={project.symbol}
-              className="grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+            <React.Fragment key={project.symbol}>
+              {/* Desktop Table Row */}
+              <div className="hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
               <div className="flex justify-center">
                 <input
@@ -1295,6 +1295,222 @@ export default function HomePage() {
                 />
               </div>
             </div>
+
+            {/* Mobile Card */}
+            <div className="block md:hidden p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              {/* Card Header with Star, X button, and Action Menu */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={project.is_featured || project.maybe_featured || false}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleFeatured(project.id);
+                    }}
+                    className={`w-5 h-5 rounded focus:ring-2 cursor-pointer transition-colors ${
+                      project.is_featured
+                        ? 'accent-emerald-600 focus:ring-emerald-500'
+                        : project.maybe_featured
+                        ? 'accent-orange-500 focus:ring-orange-400'
+                        : 'accent-gray-300 focus:ring-gray-400'
+                    }`}
+                    title={
+                      project.is_featured
+                        ? 'Featured (shows on public page)'
+                        : project.maybe_featured
+                        ? 'Maybe (review later)'
+                        : 'Not reviewed'
+                    }
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDismissed(project.id, true);
+                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
+                    title="Dismiss project"
+                  >
+                    <X className="w-5 h-5" strokeWidth={2.5} />
+                  </button>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ProjectActionMenu
+                    projectSymbol={project.symbol}
+                    projectName={project.name}
+                    hasWhitepaper={!!project.whitepaper_tier}
+                    twitterUrl={project.twitter_url}
+                    onAddWhitepaper={() => {
+                      setSelectedProject({ symbol: project.symbol, name: project.name });
+                      setShowAddWhitepaperModal(true);
+                    }}
+                    onAnalyzeTwitter={
+                      project.twitter_url
+                        ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
+                        : undefined
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Project Info */}
+              <div className="mb-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <div
+                    className="text-lg font-bold cursor-pointer hover:text-emerald-600 transition-colors"
+                    onClick={() => router.push(`/${project.symbol}`)}
+                  >
+                    {project.symbol}
+                  </div>
+                  {(() => {
+                    const badge = getSourceBadge(project.source);
+                    if (!badge) return null;
+
+                    const createdDate = project.created_at
+                      ? new Date(project.created_at).toLocaleString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })
+                      : 'Unknown';
+
+                    return (
+                      <div className="relative group">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-help ${badge.color}`}>
+                          {badge.label}
+                        </span>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
+                          Ingested: {createdDate}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    {project.website_url && (
+                      <div className="text-gray-300 hover:text-emerald-600 transition-colors">
+                        <WebsitePreviewTooltip
+                          websiteUrl={project.website_url}
+                          screenshotUrl={project.website_screenshot_url}
+                          projectName={project.name}
+                        />
+                      </div>
+                    )}
+                    <PlatformLinks
+                      coinGeckoId={project.coingecko_id}
+                      contractAddress={project.contract_address}
+                      network={project.network}
+                    />
+                  </div>
+                </div>
+                <div className="text-sm text-gray-500">{project.name}</div>
+              </div>
+
+              {/* Meta Info */}
+              <div className="flex gap-4 text-sm text-gray-600 mb-3">
+                <div>
+                  <span className="text-gray-400">Age:</span> {formatAge(project.project_age_years)}
+                </div>
+                <div>
+                  <span className="text-gray-400">MCap:</span> {formatMcap(project.current_market_cap)}
+                </div>
+              </div>
+
+              {/* Tiers */}
+              <div className="flex flex-wrap gap-2 items-center">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Tiers:</div>
+
+                {/* Website Tier */}
+                {project.website_stage1_tier ? (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <SignalBasedTooltip
+                      projectSymbol={project.symbol}
+                      signals={project.website_stage1_analysis?.signals_found}
+                      redFlags={project.website_stage1_analysis?.red_flags}
+                      websiteAnalysis={project.website_stage1_analysis}
+                      isAdmin={false}
+                    >
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                        project.website_stage1_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
+                        project.website_stage1_tier === 'SOLID' ? 'bg-amber-50 text-amber-600' :
+                        project.website_stage1_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        W:{project.website_stage1_tier}
+                      </span>
+                    </SignalBasedTooltip>
+                  </div>
+                ) : null}
+
+                {/* Whitepaper Tier */}
+                {project.whitepaper_tier ? (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <WhitepaperTooltip
+                      projectSymbol={project.symbol}
+                      whitepaperTier={project.whitepaper_tier}
+                      whitepaperUrl={project.whitepaper_url}
+                      whitepaperStoryAnalysis={project.whitepaper_story_analysis}
+                      whitepaperPhase2Comparison={project.whitepaper_phase2_comparison}
+                    >
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                        project.whitepaper_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
+                        project.whitepaper_tier === 'SOLID' ? 'bg-amber-50 text-amber-600' :
+                        project.whitepaper_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        P:{project.whitepaper_tier}
+                      </span>
+                    </WhitepaperTooltip>
+                  </div>
+                ) : null}
+
+                {/* X Tier */}
+                {project.x_tier && project.x_signals_found && project.x_signals_found.length > 0 ? (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <XSignalTooltip
+                      signals={project.x_signals_found}
+                      tier={project.x_tier}
+                      score={project.x_score || 0}
+                      summary={project.x_analysis_summary || undefined}
+                    >
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-bold cursor-pointer ${
+                        project.x_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
+                        project.x_tier === 'SOLID' ? 'bg-amber-50 text-amber-600' :
+                        project.x_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        X:{project.x_tier}
+                      </span>
+                    </XSignalTooltip>
+                  </div>
+                ) : null}
+
+                {/* Error Indicator */}
+                {project.analysis_errors && Object.keys(project.analysis_errors).length > 0 ? (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <div className="relative group">
+                      <span className="text-red-500 cursor-help text-lg">⚠️</span>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl max-h-96 overflow-auto">
+                        <div className="font-bold mb-2 text-red-300">Analysis Errors:</div>
+                        {Object.entries(project.analysis_errors).map(([errorType, errorData]) => (
+                          <div key={errorType} className="mb-2 last:mb-0">
+                            <div className="font-semibold text-yellow-300 capitalize">
+                              {errorType.replace(/_/g, ' ')}:
+                            </div>
+                            <div className="text-gray-300 ml-2">{errorData.error}</div>
+                            <div className="text-gray-500 text-[10px] ml-2 mt-0.5">
+                              Attempt #{errorData.attempt} • {new Date(errorData.failed_at).toLocaleString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </React.Fragment>
           ))}
 
           {/* Infinite Scroll Trigger */}
