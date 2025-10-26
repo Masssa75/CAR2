@@ -1314,10 +1314,10 @@ export default function HomePage() {
             </div>
 
             {/* Mobile Card */}
-            <div className="block md:hidden p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <div className="block md:hidden p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors overflow-hidden">
               {/* Card Header with Star, X button, and Action Menu */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-3 min-w-0">
+                <div className="flex items-center gap-3 flex-shrink min-w-0">
                   <input
                     type="checkbox"
                     checked={project.is_featured || project.maybe_featured || false}
@@ -1351,7 +1351,7 @@ export default function HomePage() {
                     <X className="w-5 h-5" strokeWidth={2.5} />
                   </button>
                 </div>
-                <div onClick={(e) => e.stopPropagation()}>
+                <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
                   <ProjectActionMenu
                     projectSymbol={project.symbol}
                     projectName={project.name}
@@ -1371,8 +1371,8 @@ export default function HomePage() {
               </div>
 
               {/* Project Info */}
-              <div className="mb-3">
-                <div className="flex items-center gap-2 mb-1">
+              <div className="mb-3 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0">
                   <div
                     className="text-lg font-bold cursor-pointer hover:text-emerald-600 transition-colors"
                     onClick={() => router.push(`/${project.symbol}`)}
