@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Zap, Filter, Menu, Plus, Gem, Clock, List, X } from 'lucide-react';
+import { Zap, Filter, Menu, Plus, Gem, Clock, List, X, FileSearch } from 'lucide-react';
 import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
@@ -1095,7 +1095,7 @@ export default function HomePage() {
               <div className="text-center">WP</div>
               <div className="text-center">X</div>
               <div className="text-center">Err</div>
-              <div className="text-center">🔬</div>
+              <div className="text-center">Research</div>
               <div className="text-center"></div>
             </div>
 
@@ -1392,15 +1392,24 @@ export default function HomePage() {
                 ) : null}
               </div>
 
-              {/* Research Indicator */}
+              {/* Research Badge */}
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 {project.deep_research_md ? (
-                  <div className="relative group">
-                    <span className="text-emerald-500 cursor-help text-lg">🔬</span>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                      Deep research available
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedProject({
+                        symbol: project.symbol,
+                        name: project.name,
+                        research: project.deep_research_md
+                      });
+                      setShowResearchModal(true);
+                    }}
+                    className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Click to view research"
+                  >
+                    <FileSearch className="w-3 h-3" />
+                    View
+                  </button>
                 ) : null}
               </div>
 
@@ -1659,6 +1668,26 @@ export default function HomePage() {
                     </span>
                   )}
                 </div>
+
+                {/* Research Badge - Mobile */}
+                {project.deep_research_md && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => {
+                        setSelectedProject({
+                          symbol: project.symbol,
+                          name: project.name,
+                          research: project.deep_research_md
+                        });
+                        setShowResearchModal(true);
+                      }}
+                      className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors flex items-center gap-1"
+                    >
+                      <FileSearch className="w-3 h-3" />
+                      Research
+                    </button>
+                  </div>
+                )}
 
                 {/* Error Indicator */}
                 {project.analysis_errors && Object.keys(project.analysis_errors).length > 0 ? (
