@@ -14,6 +14,7 @@ import { PlatformLinks } from '@/components/PlatformLinks';
 import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
 import { ProjectActionMenu } from '@/components/ProjectActionMenu';
 import { AddWhitepaperModal } from '@/components/AddWhitepaperModal';
+import { ResearchModal } from '@/components/ResearchModal';
 import RankSearchInput from '@/components/rank/RankSearchInput';
 
 const supabase = createClient(
@@ -79,6 +80,8 @@ interface Project {
   x_score?: number | null;
   x_signals_found?: any[];
   x_analysis_summary?: string | null;
+  deep_research_md?: string | null;
+  research_analyzed_at?: string | null;
   analysis_errors?: {
     [key: string]: AnalysisError;
   };
@@ -113,7 +116,8 @@ export default function HomePage() {
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
   const [showAddWhitepaperModal, setShowAddWhitepaperModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<{ symbol: string; name: string } | null>(null);
+  const [showResearchModal, setShowResearchModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<{ symbol: string; name: string; research?: string | null } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [hideDismissed, setHideDismissed] = useState(true);
@@ -1068,7 +1072,7 @@ export default function HomePage() {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header - Desktop Only */}
-            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <div className="text-center">★</div>
               <div className="text-center">✕</div>
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
@@ -1091,6 +1095,7 @@ export default function HomePage() {
               <div className="text-center">WP</div>
               <div className="text-center">X</div>
               <div className="text-center">Err</div>
+              <div className="text-center">🔬</div>
               <div className="text-center"></div>
             </div>
 
@@ -1108,7 +1113,7 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <React.Fragment key={project.symbol}>
               {/* Desktop Table Row */}
-              <div className="hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+              <div className="hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
               <div className="flex justify-center">
                 <input
@@ -1386,11 +1391,25 @@ export default function HomePage() {
                   </div>
                 ) : null}
               </div>
+
+              {/* Research Indicator */}
+              <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                {project.deep_research_md ? (
+                  <div className="relative group">
+                    <span className="text-emerald-500 cursor-help text-lg">🔬</span>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                      Deep research available
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 <ProjectActionMenu
                   projectSymbol={project.symbol}
                   projectName={project.name}
                   hasWhitepaper={!!project.whitepaper_tier}
+                  hasResearch={!!project.deep_research_md}
                   twitterUrl={project.twitter_url}
                   onAddWhitepaper={() => {
                     setSelectedProject({ symbol: project.symbol, name: project.name });
@@ -1401,6 +1420,14 @@ export default function HomePage() {
                       ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
                       : undefined
                   }
+                  onSubmitResearch={() => {
+                    setSelectedProject({
+                      symbol: project.symbol,
+                      name: project.name,
+                      research: project.deep_research_md
+                    });
+                    setShowResearchModal(true);
+                  }}
                 />
               </div>
             </div>
@@ -1448,6 +1475,7 @@ export default function HomePage() {
                     projectSymbol={project.symbol}
                     projectName={project.name}
                     hasWhitepaper={!!project.whitepaper_tier}
+                    hasResearch={!!project.deep_research_md}
                     twitterUrl={project.twitter_url}
                     onAddWhitepaper={() => {
                       setSelectedProject({ symbol: project.symbol, name: project.name });
@@ -1458,6 +1486,14 @@ export default function HomePage() {
                         ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
                         : undefined
                     }
+                    onSubmitResearch={() => {
+                      setSelectedProject({
+                        symbol: project.symbol,
+                        name: project.name,
+                        research: project.deep_research_md
+                      });
+                      setShowResearchModal(true);
+                    }}
                   />
                 </div>
               </div>
@@ -1691,6 +1727,23 @@ export default function HomePage() {
           projectName={selectedProject.name}
           onClose={() => {
             setShowAddWhitepaperModal(false);
+            setSelectedProject(null);
+          }}
+          onSuccess={() => {
+            fetchProjects(1, true);
+          }}
+        />
+      )}
+
+      {/* Research Modal */}
+      {selectedProject && (
+        <ResearchModal
+          isOpen={showResearchModal}
+          projectSymbol={selectedProject.symbol}
+          projectName={selectedProject.name}
+          existingResearch={selectedProject.research}
+          onClose={() => {
+            setShowResearchModal(false);
             setSelectedProject(null);
           }}
           onSuccess={() => {

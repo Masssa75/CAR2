@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreVertical, FileText, Twitter } from 'lucide-react';
+import { MoreVertical, FileText, Twitter, FileSearch } from 'lucide-react';
 
 interface ProjectActionMenuProps {
   projectSymbol: string;
   projectName: string;
   hasWhitepaper: boolean;
   twitterUrl?: string | null;
+  hasResearch?: boolean;
   onAddWhitepaper: () => void;
   onAnalyzeTwitter?: () => void;
+  onSubmitResearch?: () => void;
 }
 
 export function ProjectActionMenu({
@@ -17,8 +19,10 @@ export function ProjectActionMenu({
   projectName,
   hasWhitepaper,
   twitterUrl,
+  hasResearch,
   onAddWhitepaper,
-  onAnalyzeTwitter
+  onAnalyzeTwitter,
+  onSubmitResearch
 }: ProjectActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -91,6 +95,19 @@ export function ProjectActionMenu({
             >
               <Twitter className="w-4 h-4" />
               {isAnalyzing ? 'Analyzing Twitter...' : 'Analyze Twitter'}
+            </button>
+          )}
+
+          {onSubmitResearch && (
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                onSubmitResearch();
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+            >
+              <FileSearch className="w-4 h-4" />
+              {hasResearch ? 'View/Edit Research' : 'Submit Research'}
             </button>
           )}
 
