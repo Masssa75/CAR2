@@ -85,14 +85,25 @@ async function fetchTokenDataFromDexScreener(contractAddress: string, network: s
     }
 
     const data = await response.json();
-    
+
     // DexScreener returns an array of pairs for a token
     // Find the pair on our target network with highest liquidity
     const pairs = data.pairs || [];
-    const networkPairs = pairs.filter((p: any) => 
+
+    // Debug logging for Solana (and other chains)
+    console.log(`[DexScreener] Token: ${contractAddress}, Target network: ${network}`);
+    console.log(`[DexScreener] Total pairs found: ${pairs.length}`);
+    if (pairs.length > 0) {
+      const uniqueChainIds = [...new Set(pairs.map((p: any) => p.chainId))];
+      console.log(`[DexScreener] Available chainIds: ${uniqueChainIds.join(', ')}`);
+    }
+
+    const networkPairs = pairs.filter((p: any) =>
       p.chainId?.toLowerCase() === network.toLowerCase()
     );
-    
+
+    console.log(`[DexScreener] Pairs matching network '${network}': ${networkPairs.length}`);
+
     if (networkPairs.length === 0) {
       return null;
     }
