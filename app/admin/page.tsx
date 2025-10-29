@@ -351,7 +351,7 @@ export default function HomePage() {
     }
   }
 
-  async function handleAnalyzeTwitter(symbol: string, twitterUrl: string) {
+  async function handleAnalyzeTwitter(projectId: number, symbol: string, twitterUrl: string) {
     try {
       // Extract handle from Twitter URL
       const handle = twitterUrl.split('/').pop() || '';
@@ -359,7 +359,7 @@ export default function HomePage() {
       const response = await fetch('/api/analyze-twitter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol, handle })
+        body: JSON.stringify({ projectId, symbol, handle })
       });
 
       const json = await response.json();
@@ -1426,7 +1426,7 @@ export default function HomePage() {
                   }}
                   onAnalyzeTwitter={
                     project.twitter_url
-                      ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
+                      ? () => handleAnalyzeTwitter(project.id, project.symbol, project.twitter_url!)
                       : undefined
                   }
                   onSubmitResearch={() => {
@@ -1492,7 +1492,7 @@ export default function HomePage() {
                     }}
                     onAnalyzeTwitter={
                       project.twitter_url
-                        ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
+                        ? () => handleAnalyzeTwitter(project.id, project.symbol, project.twitter_url!)
                         : undefined
                     }
                     onSubmitResearch={() => {

@@ -5,7 +5,7 @@ export const maxDuration = 300; // 5 minutes
 
 export async function POST(request: NextRequest) {
   try {
-    const { symbol, handle } = await request.json();
+    const { projectId, symbol, handle } = await request.json();
 
     if (!symbol) {
       return NextResponse.json(
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
           action: 'analyze',
           symbol,
           handle,
+          projectId,
         }),
       }
     );
