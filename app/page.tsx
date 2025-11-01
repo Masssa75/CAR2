@@ -461,7 +461,8 @@ export default function HomePage() {
         whitepaperTiers: ['ALPHA'],
         xTiers: [],
         maxAge: '5',
-        maxMcap: ''
+        maxMcap: '',
+        bittensorOnly: false
       });
       setSortColumn('project_age_years');
       setSortDirection('asc');
@@ -473,7 +474,8 @@ export default function HomePage() {
         whitepaperTiers: [],
         xTiers: [],
         maxAge: '',
-        maxMcap: ''
+        maxMcap: '',
+        bittensorOnly: false
       });
       setSortColumn('created_at');
       setSortDirection('desc');
@@ -485,7 +487,8 @@ export default function HomePage() {
         whitepaperTiers: [],
         xTiers: [],
         maxAge: '',
-        maxMcap: ''
+        maxMcap: '',
+        bittensorOnly: false
       });
       setSortColumn('current_market_cap');
       setSortDirection('desc');
