@@ -94,6 +94,7 @@ interface FilterState {
   xTiers: string[];
   maxAge: string;
   maxMcap: string;
+  bittensorOnly: boolean;
 }
 
 type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier' | 'created_at' | 'total_volume' | 'price_change_percentage_24h';
@@ -127,7 +128,8 @@ export default function HomePage() {
     whitepaperTiers: [],
     xTiers: [],
     maxAge: '',
-    maxMcap: ''
+    maxMcap: '',
+    bittensorOnly: false
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -270,6 +272,10 @@ export default function HomePage() {
 
         if (filters.xTiers.length > 0) {
           params.append('xTiers', filters.xTiers.join(','));
+        }
+
+        if (filters.bittensorOnly) {
+          params.append('network', 'bittensor');
         }
 
         if (filters.maxAge) {
@@ -533,6 +539,7 @@ export default function HomePage() {
     if (filters.websiteTiers.length > 0) count++;
     if (filters.whitepaperTiers.length > 0) count++;
     if (filters.xTiers.length > 0) count++;
+    if (filters.bittensorOnly) count++;
     if (filters.maxAge) count++;
     if (filters.maxMcap) count++;
     return count;
@@ -728,7 +735,8 @@ export default function HomePage() {
                     whitepaperTiers: [],
                     xTiers: [],
                     maxAge: '',
-                    maxMcap: ''
+                    maxMcap: '',
+                    bittensorOnly: false
                   });
                 }}
                 className="text-xs text-emerald-500 font-semibold uppercase tracking-wide"
@@ -865,6 +873,19 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Bittensor Subnets Filter */}
+            <div className="mb-6">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3.5 py-2 rounded-lg transition-colors">
+                <input
+                  type="checkbox"
+                  checked={filters.bittensorOnly}
+                  onChange={(e) => setFilters(prev => ({ ...prev, bittensorOnly: e.target.checked }))}
+                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                />
+                <span className="text-sm font-semibold text-gray-700">Bittensor Subnets Only</span>
+              </label>
+            </div>
+
             {/* Max Age and Max MCap */}
             <div className="space-y-4">
               <div>
@@ -906,7 +927,8 @@ export default function HomePage() {
                       whitepaperTiers: [],
                       xTiers: [],
                       maxAge: '',
-                      maxMcap: ''
+                      maxMcap: '',
+                      bittensorOnly: false
                     });
                   }}
                   className="text-sm text-emerald-500 font-semibold"
@@ -1041,6 +1063,19 @@ export default function HomePage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Bittensor Subnets Filter */}
+              <div className="mb-4">
+                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3.5 py-2 rounded-lg transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={filters.bittensorOnly}
+                    onChange={(e) => setFilters(prev => ({ ...prev, bittensorOnly: e.target.checked }))}
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                  />
+                  <span className="text-sm font-semibold text-gray-700">Bittensor Subnets Only</span>
+                </label>
               </div>
 
               {/* Max Age and Max MCap */}
