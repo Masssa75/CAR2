@@ -5,15 +5,12 @@ import { useRouter } from 'next/navigation';
 import { ExternalLink, Twitter, Send, ChevronDown } from 'lucide-react';
 import { WebsitePreviewTooltip } from '@/components/WebsitePreviewTooltip';
 
-// Domain-based routing: redirect Netlify visitors to /admin
+// Redirect all visitors to /admin (admin is now the main interface)
 function useAdminRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    const hostname = window.location.hostname;
-    if (hostname.includes('netlify.app')) {
-      router.replace('/admin');
-    }
+    router.replace('/admin');
   }, [router]);
 }
 
@@ -44,7 +41,7 @@ export default function HomePage() {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
   const router = useRouter();
 
-  // Redirect Netlify visitors to /admin
+  // Redirect all visitors to /admin
   useAdminRedirect();
 
   // Restore filter state from localStorage

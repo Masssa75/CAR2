@@ -92,7 +92,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
         .from('crypto_projects_rated')
         .select('*')
         .eq('symbol', symbol)
-        .eq('is_featured', true)
         .limit(1);
 
       if (error) throw error;
