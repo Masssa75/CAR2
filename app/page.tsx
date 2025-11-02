@@ -151,41 +151,9 @@ export default function HomePage() {
     fetchProjects(1, true);
   }, []);
 
-  // Auto-capture screenshots for projects without them
-  useEffect(() => {
-    if (!projects || projects.length === 0) return;
-
-    projects.forEach(async (project) => {
-      // Only trigger if project has website URL but no screenshot
-      if (!project.website_screenshot_url && project.website_url) {
-        try {
-          const response = await fetch('/api/capture-screenshot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              url: project.website_url,
-              tokenId: project.id,
-              table: 'crypto_projects_rated'
-            })
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            // Update the project in state with new screenshot URL
-            setProjects(prevProjects =>
-              prevProjects.map(p =>
-                p.id === project.id
-                  ? { ...p, website_screenshot_url: result.screenshot_url }
-                  : p
-              )
-            );
-          }
-        } catch (error) {
-          console.error(`Failed to capture screenshot for ${project.symbol}:`, error);
-        }
-      }
-    });
-  }, [projects]);
+  // NOTE: Screenshot auto-capture disabled for performance
+  // It was firing dozens of API calls on page load, causing 3-5s delays
+  // Screenshots are now captured on-demand via the screenshot API endpoint
 
   // Handle search with debounce
   useEffect(() => {
@@ -240,7 +208,7 @@ export default function HomePage() {
       // Build query params
       const params = new URLSearchParams({
         page: pageNum.toString(),
-        limit: '50',
+        limit: '30',  // Reduced from 50 for faster initial load
         sortBy: sortColumn,
         sortOrder: sortDirection,
         includeUnverified: 'true'
