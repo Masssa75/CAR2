@@ -451,7 +451,7 @@ export default function HomePage() {
       setSortDirection('desc');
     }
     setHotPicksActive(false);
-    setViewMode(null); // Deactivate view mode when manually sorting
+    // Keep view mode active when sorting (e.g., sort gems by volume/gains)
   }
 
   function applyViewMode(mode: ViewMode) {
