@@ -26,16 +26,27 @@ interface FlatSignal {
 function parseSignalDate(dateStr: string): string {
   if (!dateStr) return new Date().toISOString();
 
-  // Handle formats like "Oct 31", "Mar 6", etc.
-  const currentYear = new Date().getFullYear();
-  const parsedDate = new Date(`${dateStr} ${currentYear}`);
+  try {
+    // Handle formats like "Oct 31", "Mar 6", etc.
+    const currentYear = new Date().getFullYear();
+    const parsedDate = new Date(`${dateStr} ${currentYear}`);
 
-  // If parsed date is in the future, assume it's from last year
-  if (parsedDate > new Date()) {
-    parsedDate.setFullYear(currentYear - 1);
+    // Check if date is valid
+    if (isNaN(parsedDate.getTime())) {
+      console.warn(`Invalid date format: ${dateStr}, using current date`);
+      return new Date().toISOString();
+    }
+
+    // If parsed date is in the future, assume it's from last year
+    if (parsedDate > new Date()) {
+      parsedDate.setFullYear(currentYear - 1);
+    }
+
+    return parsedDate.toISOString();
+  } catch (error) {
+    console.warn(`Error parsing date ${dateStr}:`, error);
+    return new Date().toISOString();
   }
-
-  return parsedDate.toISOString();
 }
 
 // Convert tier number to score
