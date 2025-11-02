@@ -80,6 +80,13 @@ interface Project {
   x_score?: number | null;
   x_signals_found?: any[];
   x_analysis_summary?: string | null;
+  x_analysis?: {
+    signal_evaluations?: Array<{
+      signal: string;
+      assigned_tier: number;
+      reasoning: string;
+    }>;
+  } | null;
   deep_research_md?: string | null;
   research_analyzed_at?: string | null;
   analysis_errors?: {
@@ -1503,6 +1510,7 @@ export default function HomePage() {
                     tier={project.x_tier}
                     score={project.x_score || 0}
                     summary={project.x_analysis_summary || undefined}
+                    signalEvaluations={project.x_analysis?.signal_evaluations}
                   >
                     <span className={`px-2.5 py-1 rounded-md text-xs font-bold cursor-pointer ${
                       project.x_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :
@@ -1800,6 +1808,7 @@ export default function HomePage() {
                       tier={project.x_tier}
                       score={project.x_score || 0}
                       summary={project.x_analysis_summary || undefined}
+                      signalEvaluations={project.x_analysis?.signal_evaluations}
                     >
                       <span className={`px-2.5 py-1 rounded-md text-xs font-bold cursor-pointer ${
                         project.x_tier === 'ALPHA' ? 'bg-emerald-50 text-emerald-600' :

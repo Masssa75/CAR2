@@ -13,11 +13,18 @@ interface XSignal {
   strength_score?: number;
 }
 
+interface SignalEvaluation {
+  signal: string;
+  assigned_tier: number;
+  reasoning: string;
+}
+
 interface XSignalTooltipProps {
   signals: XSignal[];
   tier: string;
   score: number;
   summary?: string;
+  signalEvaluations?: SignalEvaluation[]; // Phase 2 tier assignments
   children: React.ReactNode;
 }
 
@@ -26,6 +33,7 @@ export function XSignalTooltip({
   tier,
   score,
   summary,
+  signalEvaluations,
   children
 }: XSignalTooltipProps) {
   const [isVisible, setIsVisible] = React.useState(false);
@@ -102,6 +110,33 @@ export function XSignalTooltip({
     setIsPersistent(!isPersistent);
   };
 
+  // Convert tier to score for display (same mapping as website signals)
+  const tierToScore = (tier: number): number => {
+    switch(tier) {
+      case 1: return 90;
+      case 2: return 70;
+      case 3: return 45;
+      case 4: return 15;
+      default: return 0;
+    }
+  };
+
+  // Get score color based on value (same as website signals)
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return 'text-[#10b981]'; // Green (Tier 1)
+    if (score >= 60) return 'text-[#eab308]'; // Yellow (Tier 2)
+    if (score >= 30) return 'text-[#f97316]'; // Orange (Tier 3)
+    return 'text-[#ef4444]'; // Red (Tier 4)
+  };
+
+  // Create a map of signal text to tier assignment
+  const signalTierMap = new Map<string, number>();
+  if (signalEvaluations) {
+    signalEvaluations.forEach(evaluation => {
+      signalTierMap.set(evaluation.signal, evaluation.assigned_tier);
+    });
+  }
+
   // Sort signals by date (newest first)
   const sortedSignals = [...signals].sort((a, b) => {
     // Handle null/undefined dates
@@ -169,22 +204,32 @@ export function XSignalTooltip({
           <h4 className="text-sm font-semibold text-gray-900 mb-2">
             Signals Found ({sortedSignals.length})
           </h4>
-          {sortedSignals.map((signal, index) => (
-            <div
-              key={index}
-              className="pl-3 border-l-2 border-blue-200 py-1"
-            >
-              <div className="text-sm">
-                <span className="font-medium text-gray-700">
-                  [{signal.category.replace(/_/g, ' ')}]
-                </span>
-                {' '}
-                <span className="text-gray-900">{signal.signal}</span>
-                {' '}
-                <span className="text-gray-500">({signal.date})</span>
+          {sortedSignals.map((signal, index) => {
+            const assignedTier = signalTierMap.get(signal.signal);
+            const tierScore = assignedTier ? tierToScore(assignedTier) : null;
+
+            return (
+              <div
+                key={index}
+                className="pl-3 border-l-2 border-blue-200 py-1"
+              >
+                <div className="text-sm">
+                  <span className="font-medium text-gray-700">
+                    [{signal.category.replace(/_/g, ' ')}]
+                  </span>
+                  {' '}
+                  <span className="text-gray-900">{signal.signal}</span>
+                  {' '}
+                  <span className="text-gray-500">({signal.date})</span>
+                  {tierScore !== null && (
+                    <span className={`ml-2 font-bold ${getScoreColor(tierScore)}`}>
+                      [{tierScore}]
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
