@@ -117,22 +117,25 @@ export async function GET(request: NextRequest) {
       });
     });
 
+    // Filter out signals without tier scores (not yet scored by Phase 2)
+    const scoredSignals = flatSignals.filter(s => s.tierScore !== null);
+
     // Sort by date (newest first)
-    flatSignals.sort((a, b) => new Date(b.signalDate).getTime() - new Date(a.signalDate).getTime());
+    scoredSignals.sort((a, b) => new Date(b.signalDate).getTime() - new Date(a.signalDate).getTime());
 
     // Filter by time period
-    let filteredSignals = flatSignals;
+    let filteredSignals = scoredSignals;
     const now = new Date();
 
     if (period === 'today') {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      filteredSignals = flatSignals.filter(s => new Date(s.signalDate) >= startOfDay);
+      filteredSignals = scoredSignals.filter(s => new Date(s.signalDate) >= startOfDay);
     } else if (period === 'week') {
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      filteredSignals = flatSignals.filter(s => new Date(s.signalDate) >= oneWeekAgo);
+      filteredSignals = scoredSignals.filter(s => new Date(s.signalDate) >= oneWeekAgo);
     } else if (period === 'month') {
       const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      filteredSignals = flatSignals.filter(s => new Date(s.signalDate) >= oneMonthAgo);
+      filteredSignals = scoredSignals.filter(s => new Date(s.signalDate) >= oneMonthAgo);
     }
 
     // Filter by minimum tier score

@@ -155,15 +155,16 @@ export default function SignalsPage() {
                   )}
 
                   <div className="flex-1 min-w-0">
-                    {/* Header: Symbol, Tier Badge, Score, Date */}
+                    {/* Header: Symbol, Score Badge, Date */}
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="font-bold text-gray-900">{signal.symbol}</span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getTierBadge(signal.projectTier)}`}>
-                        {signal.projectTier}
-                      </span>
-                      {signal.tierScore !== null && (
-                        <span className={`font-bold text-sm ${getScoreColor(signal.tierScore)}`}>
+                      {signal.tierScore !== null ? (
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${getScoreColor(signal.tierScore)}`}>
                           [{signal.tierScore}]
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-500">
+                          [?]
                         </span>
                       )}
                       <span className="text-gray-400 text-sm">·</span>
