@@ -17,7 +17,7 @@ interface Signal {
   projectTier: string;
   currentMarketCap: number | null;
   logoUrl: string | null;
-  age: number | null;
+  projectAgeYears: number | null;
 }
 
 type TimePeriod = 'today' | 'week' | 'month' | 'all';

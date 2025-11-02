@@ -19,7 +19,7 @@ interface FlatSignal {
   projectTier: string;
   currentMarketCap: number | null;
   logoUrl: string | null;
-  age: number | null;
+  projectAgeYears: number | null;
 }
 
 // Helper to parse various date formats to ISO string
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     // Fetch all projects with X signals
     const { data: projects, error } = await supabase
       .from('crypto_projects_rated')
-      .select('id, symbol, name, x_signals_found, x_analysis, x_tier, current_market_cap, logo_url, age')
+      .select('id, symbol, name, x_signals_found, x_analysis, x_tier, current_market_cap, logo_url, project_age_years')
       .not('x_signals_found', 'is', null);
 
     if (error) {
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
           projectTier: project.x_tier || 'UNKNOWN',
           currentMarketCap: project.current_market_cap,
           logoUrl: project.logo_url,
-          age: project.age
+          projectAgeYears: project.project_age_years
         });
       });
     });
