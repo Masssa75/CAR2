@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const period = searchParams.get('period') || 'week'; // today, week, month, all
+    const sortBy = searchParams.get('sortBy') || 'date'; // date, score
     const minTier = searchParams.get('minTier'); // 90, 70, 45, 15
     const category = searchParams.get('category'); // partnership, technical_achievement, etc.
 
@@ -126,9 +127,6 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // Sort by date (newest first)
-    flatSignals.sort((a, b) => new Date(b.signalDate).getTime() - new Date(a.signalDate).getTime());
-
     // Filter by time period
     let filteredSignals = flatSignals;
     const now = new Date();
@@ -153,6 +151,22 @@ export async function GET(request: NextRequest) {
     // Filter by category
     if (category && category !== 'all') {
       filteredSignals = filteredSignals.filter(s => s.category === category);
+    }
+
+    // Sort signals
+    if (sortBy === 'score') {
+      // Sort by tier score (highest first), then by date for same scores
+      filteredSignals.sort((a, b) => {
+        const scoreA = a.tierScore || 0;
+        const scoreB = b.tierScore || 0;
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA; // Higher score first
+        }
+        return new Date(b.signalDate).getTime() - new Date(a.signalDate).getTime(); // Newer first for same score
+      });
+    } else {
+      // Sort by date (newest first) - default
+      filteredSignals.sort((a, b) => new Date(b.signalDate).getTime() - new Date(a.signalDate).getTime());
     }
 
     return NextResponse.json({

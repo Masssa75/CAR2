@@ -26,16 +26,17 @@ export default function SignalsPage() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<TimePeriod>('week');
+  const [sortBy, setSortBy] = useState<'date' | 'score'>('date');
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetchSignals();
-  }, [period]);
+  }, [period, sortBy]);
 
   async function fetchSignals() {
     setLoading(true);
     try {
-      const response = await fetch(`/api/signals?period=${period}`);
+      const response = await fetch(`/api/signals?period=${period}&sortBy=${sortBy}`);
       const data = await response.json();
       setSignals(data.signals || []);
       setTotal(data.total || 0);
@@ -111,6 +112,31 @@ export default function SignalsPage() {
                 {p === 'today' ? 'Today' : p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'All Time'}
               </button>
             ))}
+          </div>
+
+          {/* Sort Options */}
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-sm text-gray-600">Sort by:</span>
+            <button
+              onClick={() => setSortBy('date')}
+              className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
+                sortBy === 'date'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Latest
+            </button>
+            <button
+              onClick={() => setSortBy('score')}
+              className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
+                sortBy === 'score'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Highest Score
+            </button>
           </div>
 
           {/* Stats */}
