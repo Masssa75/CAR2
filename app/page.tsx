@@ -915,30 +915,40 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Mobile Filter Panel (top dropdown) */}
-          {showFilters && (
-            <div className="md:hidden bg-white border-b border-gray-200 px-5 py-5">
-              <div className="flex justify-between items-center mb-4">
+        {/* Mobile Filter Modal Overlay */}
+        {showFilters && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden" onClick={() => setShowFilters(false)} />
+            <div className="fixed inset-x-0 top-0 bottom-0 z-50 md:hidden bg-white overflow-y-auto">
+              <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-5 py-4 flex justify-between items-center">
                 <h3 className="text-base font-bold text-gray-900">Filters</h3>
-                <button
-                  onClick={() => {
-                    setFilters({
-                      tokenType: 'all',
-                      websiteTiers: [],
-                      whitepaperTiers: [],
-                      xTiers: [],
-                      maxAge: '',
-                      maxMcap: '',
-                      bittensorOnly: false
-                    });
-                  }}
-                  className="text-sm text-emerald-500 font-semibold"
-                >
-                  Reset
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setFilters({
+                        tokenType: 'all',
+                        websiteTiers: [],
+                        whitepaperTiers: [],
+                        xTiers: [],
+                        maxAge: '',
+                        maxMcap: '',
+                        bittensorOnly: false
+                      });
+                    }}
+                    className="text-sm text-emerald-500 font-semibold"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
               </div>
+
+              <div className="px-5 py-5">
 
               {/* Token Type */}
               <div className="mb-4">
@@ -1105,8 +1115,12 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          )}
+            </div>
+          </>
+        )}
 
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header - Desktop Only */}
