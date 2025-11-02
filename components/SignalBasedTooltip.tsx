@@ -120,6 +120,7 @@ export function SignalBasedTooltip({
   const tooltipRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
   const [showSignalDetails, setShowSignalDetails] = React.useState<string | null>(null);
   const [localFeedback, setLocalFeedback] = React.useState<Record<string, any>>(signalFeedback || {});
   const [editingFeedback, setEditingFeedback] = React.useState<Record<string, string>>({});
@@ -170,6 +171,7 @@ export function SignalBasedTooltip({
 
   React.useEffect(() => {
     setMounted(true);
+    setIsMobile(window.innerWidth < 768);
   }, []);
 
   React.useEffect(() => {
@@ -570,7 +572,7 @@ export function SignalBasedTooltip({
       {mounted && showTooltip && tooltipPosition && createPortal(
         <div
           ref={tooltipRef}
-          className={`fixed z-[999999] ${isPersistent ? 'pointer-events-auto' : 'pointer-events-none'}`}
+          className={`fixed z-[999999] ${(isPersistent || isMobile) ? 'pointer-events-auto' : 'pointer-events-none'}`}
           style={{
             left: `${tooltipPosition.x}px`,
             top: tooltipPosition.placement === 'above'

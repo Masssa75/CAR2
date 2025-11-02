@@ -55,6 +55,7 @@ export function WhitepaperTooltip({
   const tooltipRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
 
   // Lazy loading state
   const [isLoadingData, setIsLoadingData] = React.useState(false);
@@ -94,6 +95,7 @@ export function WhitepaperTooltip({
 
   React.useEffect(() => {
     setMounted(true);
+    setIsMobile(window.innerWidth < 768);
   }, []);
 
   // Handle click outside to close persistent tooltip
@@ -282,7 +284,7 @@ export function WhitepaperTooltip({
       {showTooltip && tooltipPosition && mounted && createPortal(
         <div
           ref={tooltipRef}
-          className={`fixed z-[999999] ${isPersistent ? 'pointer-events-auto' : 'pointer-events-none'}`}
+          className={`fixed z-[999999] ${(isPersistent || isMobile) ? 'pointer-events-auto' : 'pointer-events-none'}`}
           style={{
             left: `${tooltipPosition.x}px`,
             top: tooltipPosition.placement === 'above'
