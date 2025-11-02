@@ -27,11 +27,14 @@ export function MarketCapTooltip({
   const handleMouseEnter = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const tooltipWidth = 450;
-      const tooltipHeight = 400;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const padding = 20;
+      const isMobile = viewportWidth < 768;
+
+      // Responsive width: smaller on mobile to prevent cutoff
+      const tooltipWidth = isMobile ? Math.min(viewportWidth - 20, 380) : 450;
+      const tooltipHeight = 400;
+      const padding = isMobile ? 10 : 20; // Less padding on mobile
 
       // Vertical positioning
       const spaceAbove = rect.top;
@@ -98,7 +101,7 @@ export function MarketCapTooltip({
             top: position.positionBelow ? `${position.y}px` : 'auto',
             bottom: position.positionBelow ? 'auto' : `${window.innerHeight - position.y}px`,
             transform: 'translateX(-50%)',
-            width: '450px'
+            width: window.innerWidth < 768 ? `${Math.min(window.innerWidth - 20, 380)}px` : '450px'
           }}
           onMouseEnter={handleMouseLeave}
         >

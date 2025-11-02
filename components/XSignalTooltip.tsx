@@ -56,11 +56,14 @@ export function XSignalTooltip({
     if (isPersistent) return;
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const tooltipWidth = 600;
-      const tooltipHeight = 400; // Estimated max height
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const padding = 20; // Padding from viewport edges
+      const isMobile = viewportWidth < 768;
+
+      // Responsive width: smaller on mobile to prevent cutoff
+      const tooltipWidth = isMobile ? Math.min(viewportWidth - 20, 380) : 600;
+      const tooltipHeight = 400; // Estimated max height
+      const padding = isMobile ? 10 : 20; // Less padding on mobile
 
       // Vertical positioning
       const spaceAbove = rect.top;
@@ -125,9 +128,9 @@ export function XSignalTooltip({
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className="bg-white rounded-lg shadow-2xl border border-gray-200 p-6"
+        className="bg-white rounded-lg shadow-2xl border border-gray-200 p-4 md:p-6"
         style={{
-          width: '600px',
+          width: window.innerWidth < 768 ? `${Math.min(window.innerWidth - 20, 380)}px` : '600px',
           maxWidth: 'calc(100vw - 40px)',
           maxHeight: '60vh',
           overflowY: 'auto'

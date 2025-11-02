@@ -25,11 +25,14 @@ export function WebsitePreviewTooltip({
   const handleMouseEnter = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const tooltipWidth = 400; // Doubled from 200px
-      const tooltipHeight = 650; // Estimated height (600px screenshot + header/footer)
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const padding = 20; // Padding from viewport edges
+      const isMobile = viewportWidth < 768;
+
+      // Responsive width: smaller on mobile to prevent cutoff
+      const tooltipWidth = isMobile ? Math.min(viewportWidth - 20, 380) : 400;
+      const tooltipHeight = 650; // Estimated height (600px screenshot + header/footer)
+      const padding = isMobile ? 10 : 20; // Less padding on mobile
 
       // Vertical positioning
       const spaceAbove = rect.top;
@@ -102,7 +105,7 @@ export function WebsitePreviewTooltip({
             top: position.positionBelow ? `${position.y}px` : 'auto',
             bottom: position.positionBelow ? 'auto' : `${window.innerHeight - position.y}px`,
             transform: 'translateX(-50%)',
-            width: '400px' // Doubled from 200px
+            width: window.innerWidth < 768 ? `${Math.min(window.innerWidth - 20, 380)}px` : '400px'
           }}
           onMouseEnter={handleMouseLeave}
         >
