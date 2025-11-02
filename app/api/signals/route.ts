@@ -23,18 +23,21 @@ interface FlatSignal {
 }
 
 // Helper to parse various date formats to ISO string
-function parseSignalDate(dateStr: string): string {
-  if (!dateStr) return new Date().toISOString();
+function parseSignalDate(dateStr: string, debugSymbol?: string): string {
+  if (!dateStr || dateStr === '' || dateStr === 'null' || dateStr === 'undefined') {
+    // Return null for missing dates instead of current time
+    return '';
+  }
 
   try {
-    // Handle formats like "Oct 31", "Mar 6", etc.
+    // Handle formats like "Oct 31", "Mar 6", "Nov 1", etc.
     const currentYear = new Date().getFullYear();
     const parsedDate = new Date(`${dateStr} ${currentYear}`);
 
     // Check if date is valid
     if (isNaN(parsedDate.getTime())) {
-      console.warn(`Invalid date format: ${dateStr}, using current date`);
-      return new Date().toISOString();
+      console.log(`[${debugSymbol}] Invalid date format: "${dateStr}"`);
+      return '';
     }
 
     // If parsed date is in the future, assume it's from last year
@@ -44,8 +47,8 @@ function parseSignalDate(dateStr: string): string {
 
     return parsedDate.toISOString();
   } catch (error) {
-    console.warn(`Error parsing date ${dateStr}:`, error);
-    return new Date().toISOString();
+    console.log(`[${debugSymbol}] Error parsing date "${dateStr}":`, error);
+    return '';
   }
 }
 
@@ -99,21 +102,26 @@ export async function GET(request: NextRequest) {
         const assignedTier = signalTierMap.get(signal.signal);
         const tierScore = assignedTier ? tierToScore(assignedTier) : null;
 
-        flatSignals.push({
-          id: `${project.id}-${index}`,
-          projectId: project.id,
-          symbol: project.symbol,
-          name: project.name,
-          signalText: signal.signal,
-          signalType: 'x_signal',
-          category: signal.category || 'other',
-          tierScore,
-          signalDate: parseSignalDate(signal.date),
-          projectTier: project.x_tier || 'UNKNOWN',
-          currentMarketCap: project.current_market_cap,
-          logoUrl: project.logo_url,
-          projectAgeYears: project.project_age_years
-        });
+        const parsedDate = parseSignalDate(signal.date, project.symbol);
+
+        // Only add signals with valid dates
+        if (parsedDate) {
+          flatSignals.push({
+            id: `${project.id}-${index}`,
+            projectId: project.id,
+            symbol: project.symbol,
+            name: project.name,
+            signalText: signal.signal,
+            signalType: 'x_signal',
+            category: signal.category || 'other',
+            tierScore,
+            signalDate: parsedDate,
+            projectTier: project.x_tier || 'UNKNOWN',
+            currentMarketCap: project.current_market_cap,
+            logoUrl: project.logo_url,
+            projectAgeYears: project.project_age_years
+          });
+        }
       });
     });
 
