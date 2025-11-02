@@ -581,9 +581,12 @@ export function SignalBasedTooltip({
               : 'translate(-50%, 8px)',
           }}
         >
-          <div className="bg-white rounded-lg shadow-2xl border border-gray-200 p-3 md:p-4
-            w-[calc(100vw-20px)] max-w-[500px] min-w-[300px] md:min-w-[400px]
-            max-h-[60vh] md:max-h-[80vh] overflow-y-auto scrollbar-hide">
+          <div
+            className="bg-white rounded-lg shadow-2xl border border-gray-200 p-3 md:p-4
+              w-[calc(100vw-20px)] max-w-[500px] min-w-[300px] md:min-w-[400px]
+              max-h-[60vh] md:max-h-[80vh] overflow-y-auto md:scrollbar-hide"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             
             {/* Error States for Incomplete Data */}
             {hasLargeHtml && (

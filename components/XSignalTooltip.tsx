@@ -133,7 +133,8 @@ export function XSignalTooltip({
           width: window.innerWidth < 768 ? `${Math.min(window.innerWidth - 20, 380)}px` : '600px',
           maxWidth: 'calc(100vw - 40px)',
           maxHeight: '60vh',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch'
         }}
       >
       {/* Header */}
