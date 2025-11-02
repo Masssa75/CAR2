@@ -26,6 +26,8 @@ interface Project {
   website_stage1_analysis: {
     signal_evaluations?: SignalEvaluation[];
     strongest_signal?: string;
+    project_summary?: string;
+    project_description?: string;
   };
   whitepaper_story_analysis: {
     simple_description?: string;
@@ -241,6 +243,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ symbol
             </div>
           </div>
         </div>
+
+        {/* Project Summary */}
+        {project.website_stage1_analysis?.project_summary && (
+          <div className="px-4 py-5 border-b border-[#eee] bg-[#f9fafb]">
+            <p className="text-[14px] leading-relaxed text-[#333]">
+              {project.website_stage1_analysis.project_summary}
+            </p>
+          </div>
+        )}
 
         {/* Signals Section */}
         <div className="px-4 py-5 border-b border-[#eee]">
