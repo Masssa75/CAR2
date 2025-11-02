@@ -144,7 +144,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in signals API:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch signals' },
+      {
+        error: 'Failed to fetch signals',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }
