@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Zap, Filter, Menu, Plus, Gem, Clock, List, X, FileSearch } from 'lucide-react';
+import { Zap, Filter, Menu, Plus, Gem, Clock, List, X, FileSearch, ArrowUpDown } from 'lucide-react';
 import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
@@ -113,6 +113,7 @@ export default function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showViewModeDropdown, setShowViewModeDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('latest');
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
@@ -661,6 +662,80 @@ export default function HomePage() {
                     >
                       <List className="w-4 h-4" />
                       All
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                <ArrowUpDown className="w-5 h-5 text-gray-600" />
+              </button>
+
+              {/* Sort Dropdown Menu */}
+              {showSortDropdown && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowSortDropdown(false)} />
+                  <div className="absolute top-12 right-0 z-40 bg-white border border-gray-200 rounded-lg shadow-lg w-44">
+                    <button
+                      onClick={() => {
+                        handleSort('created_at');
+                        setShowSortDropdown(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
+                        sortColumn === 'created_at' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      Latest Added
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSort('current_market_cap');
+                        setShowSortDropdown(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
+                        sortColumn === 'current_market_cap' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      Market Cap
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSort('total_volume');
+                        setShowSortDropdown(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
+                        sortColumn === 'total_volume' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      Volume
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSort('price_change_percentage_24h');
+                        setShowSortDropdown(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
+                        sortColumn === 'price_change_percentage_24h' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      24h Change
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSort('project_age_years');
+                        setShowSortDropdown(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
+                        sortColumn === 'project_age_years' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
+                      }`}
+                    >
+                      Age
                     </button>
                   </div>
                 </>
