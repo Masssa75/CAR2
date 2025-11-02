@@ -796,11 +796,23 @@ export default function HomePage() {
                   setShowMenu(false);
                   setShowAddTokenModal(true);
                 }}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-900"
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-900 border-b border-gray-100"
               >
                 <Plus className="w-4 h-4" />
                 Submit Project
               </button>
+              <label
+                className="w-full px-4 py-3 flex items-center gap-2 text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="checkbox"
+                  checked={hideDismissed}
+                  onChange={(e) => setHideDismissed(e.target.checked)}
+                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                />
+                <span className="text-sm font-medium">Hide dismissed</span>
+              </label>
             </div>
           </>
         )}
@@ -1208,7 +1220,9 @@ export default function HomePage() {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header - Desktop Only */}
-            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <div className="text-center">★</div>
+              <div className="text-center">✕</div>
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
                 Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
@@ -1247,8 +1261,44 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <React.Fragment key={project.symbol}>
               {/* Desktop Table Row */}
-              <div className="hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+              <div className="hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
+              <div className="flex justify-center">
+                <input
+                  type="checkbox"
+                  checked={project.is_featured || project.maybe_featured || false}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    toggleFeatured(project.id);
+                  }}
+                  className={`w-4 h-4 rounded focus:ring-2 cursor-pointer transition-colors ${
+                    project.is_featured
+                      ? 'accent-emerald-600 focus:ring-emerald-500'
+                      : project.maybe_featured
+                      ? 'accent-orange-500 focus:ring-orange-400'
+                      : 'accent-gray-300 focus:ring-gray-400'
+                  }`}
+                  title={
+                    project.is_featured
+                      ? 'Featured (shows on public page)'
+                      : project.maybe_featured
+                      ? 'Maybe (review later)'
+                      : 'Not reviewed'
+                  }
+                />
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDismissed(project.id, true);
+                  }}
+                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
+                  title="Dismiss project"
+                >
+                  <X className="w-4 h-4" strokeWidth={2.5} />
+                </button>
+              </div>
               <div>
                 <div className="flex items-center gap-2">
                   {project.image_url && (
@@ -1541,8 +1591,42 @@ export default function HomePage() {
 
             {/* Mobile Card */}
             <div className="block md:hidden p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors overflow-hidden">
-              {/* Card Header with Action Menu */}
-              <div className="flex items-center justify-end mb-3 min-w-0">
+              {/* Card Header with Star, X button, and Action Menu */}
+              <div className="flex items-center justify-between mb-3 min-w-0">
+                <div className="flex items-center gap-3 flex-shrink min-w-0">
+                  <input
+                    type="checkbox"
+                    checked={project.is_featured || project.maybe_featured || false}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleFeatured(project.id);
+                    }}
+                    className={`w-5 h-5 rounded focus:ring-2 cursor-pointer transition-colors ${
+                      project.is_featured
+                        ? 'accent-emerald-600 focus:ring-emerald-500'
+                        : project.maybe_featured
+                        ? 'accent-orange-500 focus:ring-orange-400'
+                        : 'accent-gray-300 focus:ring-gray-400'
+                    }`}
+                    title={
+                      project.is_featured
+                        ? 'Featured (shows on public page)'
+                        : project.maybe_featured
+                        ? 'Maybe (review later)'
+                        : 'Not reviewed'
+                    }
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDismissed(project.id, true);
+                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
+                    title="Dismiss project"
+                  >
+                    <X className="w-5 h-5" strokeWidth={2.5} />
+                  </button>
+                </div>
                 <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
                   <ProjectActionMenu
                     projectSymbol={project.symbol}
