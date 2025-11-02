@@ -17,7 +17,7 @@ interface FlatSignal {
   tierScore: number | null;
   signalDate: string; // ISO date string for sorting
   projectTier: string;
-  marketCap: number | null;
+  currentMarketCap: number | null;
   logoUrl: string | null;
   age: number | null;
 }
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     // Fetch all projects with X signals
     const { data: projects, error } = await supabase
       .from('crypto_projects_rated')
-      .select('id, symbol, name, x_signals_found, x_analysis, x_tier, market_cap, logo_url, age')
+      .select('id, symbol, name, x_signals_found, x_analysis, x_tier, current_market_cap, logo_url, age')
       .not('x_signals_found', 'is', null);
 
     if (error) {
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
           tierScore,
           signalDate: parseSignalDate(signal.date),
           projectTier: project.x_tier || 'UNKNOWN',
-          marketCap: project.market_cap,
+          currentMarketCap: project.current_market_cap,
           logoUrl: project.logo_url,
           age: project.age
         });

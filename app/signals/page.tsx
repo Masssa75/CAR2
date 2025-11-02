@@ -15,7 +15,7 @@ interface Signal {
   tierScore: number | null;
   signalDate: string;
   projectTier: string;
-  marketCap: number | null;
+  currentMarketCap: number | null;
   logoUrl: string | null;
   age: number | null;
 }
