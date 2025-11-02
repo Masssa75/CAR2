@@ -70,11 +70,12 @@ export async function GET(request: NextRequest) {
     const minTier = searchParams.get('minTier'); // 90, 70, 45, 15
     const category = searchParams.get('category'); // partnership, technical_achievement, etc.
 
-    // Fetch all projects with X signals
+    // Fetch ALL projects with X signals (increase limit beyond default 1000)
     const { data: projects, error } = await supabase
       .from('crypto_projects_rated')
       .select('id, symbol, name, x_signals_found, x_analysis, x_tier, current_market_cap, logo_url, project_age_years')
-      .not('x_signals_found', 'is', null);
+      .not('x_signals_found', 'is', null)
+      .limit(5000); // Fetch up to 5000 projects
 
     if (error) {
       console.error('Database error:', error);
