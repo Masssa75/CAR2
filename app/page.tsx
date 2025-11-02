@@ -222,10 +222,10 @@ export default function HomePage() {
     filtersRef.current = filters;
   }, [filters]);
 
-  // Refetch when filters, sort, or hideDismissed changes
+  // Refetch when filters, sort, viewMode, or hideDismissed changes
   useEffect(() => {
     fetchProjects(1, true);
-  }, [filters, sortColumn, sortDirection, hideDismissed]);
+  }, [filters, sortColumn, sortDirection, viewMode, hideDismissed]);
 
   async function fetchProjects(pageNum: number, reset: boolean = false) {
     try {
@@ -256,8 +256,13 @@ export default function HomePage() {
         params.append('hideDismissed', 'true');
       }
 
-      // Add filters (only when NOT searching - search overrides all filters)
-      if (!hasSearch) {
+      // Add gem mode (overrides manual filters)
+      if (viewMode === 'gem') {
+        params.append('gemMode', 'true');
+      }
+
+      // Add filters (only when NOT searching AND NOT in gem mode - search and gem mode override filters)
+      if (!hasSearch && viewMode !== 'gem') {
         if (filters.tokenType !== 'all') {
           params.append('tokenType', filters.tokenType);
         }
@@ -454,16 +459,8 @@ export default function HomePage() {
     setShowViewModeDropdown(false);
 
     if (mode === 'gem') {
-      // Gem mode: age ≤5y, whitepaper ALPHA, sort by youngest
-      setFilters({
-        tokenType: 'all',
-        websiteTiers: [],
-        whitepaperTiers: ['ALPHA'],
-        xTiers: [],
-        maxAge: '5',
-        maxMcap: '',
-        bittensorOnly: false
-      });
+      // Gem mode: Magic preset - ALPHA in anything (website/whitepaper/X), age ≤5y, sort by youngest
+      // NOTE: Filter logic handled in API via gemMode=true parameter, not by setting filter UI
       setSortColumn('project_age_years');
       setSortDirection('asc');
     } else if (mode === 'latest') {

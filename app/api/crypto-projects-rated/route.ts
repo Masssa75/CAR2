@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
     const xTiers = searchParams.get('xTiers'); // Comma-separated list
     const projectId = searchParams.get('id'); // Add support for specific project ID
     const hideDismissed = searchParams.get('hideDismissed') === 'true'; // Admin filter
+    const gemMode = searchParams.get('gemMode') === 'true'; // Gem view mode
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     
@@ -138,7 +139,13 @@ export async function GET(request: NextRequest) {
     if (searchQuery) {
       query = query.or(`symbol.ilike.%${searchQuery}%,name.ilike.%${searchQuery}%`);
     }
-    
+
+    // Apply Gem Mode - ALPHA in any tier (website, whitepaper, or X) + age ≤5y
+    if (gemMode) {
+      query = query.or('website_stage1_tier.eq.ALPHA,whitepaper_tier.eq.ALPHA,x_tier.eq.ALPHA');
+      query = query.lte('project_age_years', 5);
+    }
+
     // Apply token type filter
     if (tokenType && tokenType !== 'all') {
       query = query.eq('token_type', tokenType);
