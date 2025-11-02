@@ -151,9 +151,65 @@ export default function HomePage() {
     fetchProjects(1, true);
   }, []);
 
-  // NOTE: Screenshot auto-capture disabled for performance
-  // It was firing dozens of API calls on page load, causing 3-5s delays
-  // Screenshots are now captured on-demand via the screenshot API endpoint
+  // Smart screenshot capture: runs AFTER initial load, processes 1 at a time with delay
+  useEffect(() => {
+    if (!projects || projects.length === 0 || loading) return;
+
+    // Find projects missing screenshots
+    const projectsNeedingScreenshots = projects.filter(
+      p => !p.website_screenshot_url && p.website_url
+    );
+
+    if (projectsNeedingScreenshots.length === 0) return;
+
+    // Capture screenshots one at a time with 2-second delay between each
+    let currentIndex = 0;
+    const captureNext = async () => {
+      if (currentIndex >= projectsNeedingScreenshots.length) return;
+
+      const project = projectsNeedingScreenshots[currentIndex];
+
+      try {
+        const response = await fetch('/api/capture-screenshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: project.website_url,
+            tokenId: project.id,
+            table: 'crypto_projects_rated'
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          // Update the project in state with new screenshot URL
+          setProjects(prevProjects =>
+            prevProjects.map(p =>
+              p.id === project.id
+                ? { ...p, website_screenshot_url: result.screenshot_url }
+                : p
+            )
+          );
+        }
+      } catch (error) {
+        console.error(`Failed to capture screenshot for ${project.symbol}:`, error);
+      }
+
+      currentIndex++;
+
+      // Wait 2 seconds before capturing next screenshot
+      if (currentIndex < projectsNeedingScreenshots.length) {
+        setTimeout(captureNext, 2000);
+      }
+    };
+
+    // Start capturing after 2 seconds (after page has loaded)
+    const timeoutId = setTimeout(captureNext, 2000);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [projects, loading]);
 
   // Handle search with debounce
   useEffect(() => {
