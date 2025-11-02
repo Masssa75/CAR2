@@ -1208,7 +1208,7 @@ export default function HomePage() {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header - Desktop Only */}
-            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
                 Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
@@ -1230,7 +1230,6 @@ export default function HomePage() {
               <div className="text-center">X</div>
               <div className="text-center">Err</div>
               <div className="text-center">Research</div>
-              <div className="text-center"></div>
             </div>
 
             {/* Projects List */}
@@ -1247,7 +1246,7 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <React.Fragment key={project.symbol}>
               {/* Desktop Table Row */}
-              <div className="hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+              <div className="hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
               <div>
                 <div className="flex items-center gap-2">
@@ -1510,67 +1509,10 @@ export default function HomePage() {
                   </button>
                 ) : null}
               </div>
-
-              <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                <ProjectActionMenu
-                  projectSymbol={project.symbol}
-                  projectName={project.name}
-                  hasWhitepaper={!!project.whitepaper_tier}
-                  hasResearch={!!project.deep_research_md}
-                  twitterUrl={project.twitter_url}
-                  onAddWhitepaper={() => {
-                    setSelectedProject({ symbol: project.symbol, name: project.name });
-                    setShowAddWhitepaperModal(true);
-                  }}
-                  onAnalyzeTwitter={
-                    project.twitter_url
-                      ? () => handleAnalyzeTwitter(project.id, project.symbol, project.twitter_url!)
-                      : undefined
-                  }
-                  onSubmitResearch={() => {
-                    setSelectedProject({
-                      symbol: project.symbol,
-                      name: project.name,
-                      research: project.deep_research_md
-                    });
-                    setShowResearchModal(true);
-                  }}
-                />
-              </div>
             </div>
 
             {/* Mobile Card */}
             <div className="block md:hidden p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors overflow-hidden">
-              {/* Card Header with Action Menu */}
-              <div className="flex items-center justify-end mb-3 min-w-0">
-                <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
-                  <ProjectActionMenu
-                    projectSymbol={project.symbol}
-                    projectName={project.name}
-                    hasWhitepaper={!!project.whitepaper_tier}
-                    hasResearch={!!project.deep_research_md}
-                    twitterUrl={project.twitter_url}
-                    onAddWhitepaper={() => {
-                      setSelectedProject({ symbol: project.symbol, name: project.name });
-                      setShowAddWhitepaperModal(true);
-                    }}
-                    onAnalyzeTwitter={
-                      project.twitter_url
-                        ? () => handleAnalyzeTwitter(project.id, project.symbol, project.twitter_url!)
-                        : undefined
-                    }
-                    onSubmitResearch={() => {
-                      setSelectedProject({
-                        symbol: project.symbol,
-                        name: project.name,
-                        research: project.deep_research_md
-                      });
-                      setShowResearchModal(true);
-                    }}
-                  />
-                </div>
-              </div>
-
               {/* Project Info */}
               <div className="mb-3 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0">
