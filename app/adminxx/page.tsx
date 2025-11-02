@@ -15,6 +15,7 @@ import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
 import { ProjectActionMenu } from '@/components/ProjectActionMenu';
 import { AddWhitepaperModal } from '@/components/AddWhitepaperModal';
 import { ResearchModal } from '@/components/ResearchModal';
+import { RoadmapModal } from '@/components/RoadmapModal';
 import RankSearchInput from '@/components/rank/RankSearchInput';
 
 const supabase = createClient(
@@ -126,6 +127,7 @@ export default function HomePage() {
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
   const [showAddWhitepaperModal, setShowAddWhitepaperModal] = useState(false);
   const [showResearchModal, setShowResearchModal] = useState(false);
+  const [showRoadmapModal, setShowRoadmapModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<{ symbol: string; name: string; research?: string | null } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -807,6 +809,16 @@ export default function HomePage() {
               >
                 <Plus className="w-4 h-4" />
                 Submit Project
+              </button>
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  setShowRoadmapModal(true);
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-900 border-b border-gray-100"
+              >
+                <Zap className="w-4 h-4" />
+                Platform Updates
               </button>
               <label
                 className="w-full px-4 py-3 flex items-center gap-2 text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -1937,6 +1949,12 @@ export default function HomePage() {
           }}
         />
       )}
+
+      {/* Roadmap Modal */}
+      <RoadmapModal
+        isOpen={showRoadmapModal}
+        onClose={() => setShowRoadmapModal(false)}
+      />
     </div>
   );
 }
