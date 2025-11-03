@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Activity, TrendingUp } from 'lucide-react';
+import { Activity, TrendingUp, Info } from 'lucide-react';
 
 interface Signal {
   id: string;
@@ -18,6 +18,8 @@ interface Signal {
   currentMarketCap: number | null;
   logoUrl: string | null;
   projectAgeYears: number | null;
+  importance?: string;
+  reasoning?: string;
 }
 
 type TimePeriod = 'today' | 'week' | 'month' | 'all';
@@ -197,8 +199,29 @@ export default function SignalsPage() {
                       <span className="text-gray-500 text-sm">{formatDate(signal.signalDate)}</span>
                     </div>
 
-                    {/* Signal Text */}
-                    <p className="text-gray-700 text-sm mb-2">{signal.signalText}</p>
+                    {/* Signal Text with Tooltip */}
+                    <div className="mb-2 flex items-start gap-1 group relative">
+                      <p className="text-gray-700 text-sm flex-1">{signal.signalText}</p>
+                      {(signal.importance || signal.reasoning) && (
+                        <>
+                          <Info className="w-4 h-4 text-gray-400 hover:text-blue-600 cursor-help flex-shrink-0 mt-0.5" />
+                          <div className="hidden group-hover:block absolute left-0 top-full mt-2 w-full sm:w-96 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50">
+                            {signal.importance && (
+                              <div className="mb-3">
+                                <p className="text-xs font-semibold text-gray-500 mb-1">Why it matters:</p>
+                                <p className="text-sm text-gray-700">{signal.importance}</p>
+                              </div>
+                            )}
+                            {signal.reasoning && (
+                              <div>
+                                <p className="text-xs font-semibold text-gray-500 mb-1">Tier reasoning:</p>
+                                <p className="text-sm text-gray-700">{signal.reasoning}</p>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
 
                     {/* Category Tag */}
                     <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">

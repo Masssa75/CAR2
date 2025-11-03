@@ -20,6 +20,8 @@ interface FlatSignal {
   currentMarketCap: number | null;
   logoUrl: string | null;
   projectAgeYears: number | null;
+  importance?: string; // Why this signal matters (from Phase 1)
+  reasoning?: string; // Why this tier was assigned (from Phase 2)
 }
 
 // Helper to parse various date formats to ISO string
@@ -94,15 +96,18 @@ export async function GET(request: NextRequest) {
       const signals = project.x_signals_found || [];
       const signalEvaluations = project.x_analysis?.signal_evaluations || [];
 
-      // Create a map of signal text to tier
+      // Create maps of signal text to tier and reasoning
       const signalTierMap = new Map<string, number>();
+      const signalReasoningMap = new Map<string, string>();
       signalEvaluations.forEach((evaluation: any) => {
         signalTierMap.set(evaluation.signal, evaluation.assigned_tier);
+        signalReasoningMap.set(evaluation.signal, evaluation.reasoning);
       });
 
       signals.forEach((signal: any, index: number) => {
         const assignedTier = signalTierMap.get(signal.signal);
         const tierScore = assignedTier ? tierToScore(assignedTier) : null;
+        const reasoning = signalReasoningMap.get(signal.signal);
 
         const parsedDate = parseSignalDate(signal.date, project.symbol);
 
@@ -121,7 +126,9 @@ export async function GET(request: NextRequest) {
             projectTier: project.x_tier || 'UNKNOWN',
             currentMarketCap: project.current_market_cap,
             logoUrl: project.logo_url,
-            projectAgeYears: project.project_age_years
+            projectAgeYears: project.project_age_years,
+            importance: signal.importance, // From Phase 1
+            reasoning: reasoning // From Phase 2
           });
         }
       });
