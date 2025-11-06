@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Zap, Filter, Menu, Plus, Gem, Clock, List, X, FileSearch, ArrowUpDown } from 'lucide-react';
+import { Zap, Filter, Menu, Plus, Gem, Clock, List, X } from 'lucide-react';
 import ProgressRing from '@/components/rank/ProgressRing';
 import { SignalBasedTooltip } from '@/components/SignalBasedTooltip';
 import { WhitepaperTooltip } from '@/components/WhitepaperTooltip';
@@ -14,7 +14,6 @@ import { PlatformLinks } from '@/components/PlatformLinks';
 import { SimpleAddTokenModal } from '@/components/SimpleAddTokenModal';
 import { ProjectActionMenu } from '@/components/ProjectActionMenu';
 import { AddWhitepaperModal } from '@/components/AddWhitepaperModal';
-import { ResearchModal } from '@/components/ResearchModal';
 import RankSearchInput from '@/components/rank/RankSearchInput';
 
 const supabase = createClient(
@@ -49,9 +48,6 @@ interface Project {
   name: string;
   project_age_years: number | null;
   current_market_cap: number | null;
-  total_volume: number | null;
-  price_change_percentage_24h: number | null;
-  image_url: string | null;
   website_stage1_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   whitepaper_tier: 'ALPHA' | 'SOLID' | 'BASIC' | 'TRASH' | null;
   token_type: 'meme' | 'utility' | 'stablecoin' | null;
@@ -80,8 +76,6 @@ interface Project {
   x_score?: number | null;
   x_signals_found?: any[];
   x_analysis_summary?: string | null;
-  deep_research_md?: string | null;
-  research_analyzed_at?: string | null;
   analysis_errors?: {
     [key: string]: AnalysisError;
   };
@@ -91,13 +85,11 @@ interface FilterState {
   tokenType: 'all' | 'utility' | 'meme' | 'stablecoin';
   websiteTiers: string[];
   whitepaperTiers: string[];
-  xTiers: string[];
   maxAge: string;
   maxMcap: string;
-  bittensorOnly: boolean;
 }
 
-type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier' | 'created_at' | 'total_volume' | 'price_change_percentage_24h';
+type SortColumn = 'name' | 'project_age_years' | 'current_market_cap' | 'website_stage1_tier' | 'whitepaper_tier' | 'created_at';
 type SortDirection = 'asc' | 'desc';
 type ViewMode = 'gem' | 'latest' | 'all' | null;
 
@@ -113,13 +105,11 @@ export default function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showViewModeDropdown, setShowViewModeDropdown] = useState(false);
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('latest');
   const [hotPicksActive, setHotPicksActive] = useState(false);
   const [showAddTokenModal, setShowAddTokenModal] = useState(false);
   const [showAddWhitepaperModal, setShowAddWhitepaperModal] = useState(false);
-  const [showResearchModal, setShowResearchModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<{ symbol: string; name: string; research?: string | null } | null>(null);
+  const [selectedProject, setSelectedProject] = useState<{ symbol: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [hideDismissed, setHideDismissed] = useState(true);
@@ -127,10 +117,8 @@ export default function HomePage() {
     tokenType: 'all',
     websiteTiers: [],
     whitepaperTiers: [],
-    xTiers: [],
     maxAge: '',
-    maxMcap: '',
-    bittensorOnly: false
+    maxMcap: ''
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -151,65 +139,41 @@ export default function HomePage() {
     fetchProjects(1, true);
   }, []);
 
-  // Smart screenshot capture: runs AFTER initial load, processes 1 at a time with delay
+  // Auto-capture screenshots for projects without them
   useEffect(() => {
-    if (!projects || projects.length === 0 || loading) return;
+    if (!projects || projects.length === 0) return;
 
-    // Find projects missing screenshots
-    const projectsNeedingScreenshots = projects.filter(
-      p => !p.website_screenshot_url && p.website_url
-    );
+    projects.forEach(async (project) => {
+      // Only trigger if project has website URL but no screenshot
+      if (!project.website_screenshot_url && project.website_url) {
+        try {
+          const response = await fetch('/api/capture-screenshot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: project.website_url,
+              tokenId: project.id,
+              table: 'crypto_projects_rated'
+            })
+          });
 
-    if (projectsNeedingScreenshots.length === 0) return;
-
-    // Capture screenshots one at a time with 2-second delay between each
-    let currentIndex = 0;
-    const captureNext = async () => {
-      if (currentIndex >= projectsNeedingScreenshots.length) return;
-
-      const project = projectsNeedingScreenshots[currentIndex];
-
-      try {
-        const response = await fetch('/api/capture-screenshot', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            url: project.website_url,
-            tokenId: project.id,
-            table: 'crypto_projects_rated'
-          })
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          // Update the project in state with new screenshot URL
-          setProjects(prevProjects =>
-            prevProjects.map(p =>
-              p.id === project.id
-                ? { ...p, website_screenshot_url: result.screenshot_url }
-                : p
-            )
-          );
+          if (response.ok) {
+            const result = await response.json();
+            // Update the project in state with new screenshot URL
+            setProjects(prevProjects =>
+              prevProjects.map(p =>
+                p.id === project.id
+                  ? { ...p, website_screenshot_url: result.screenshot_url }
+                  : p
+              )
+            );
+          }
+        } catch (error) {
+          console.error(`Failed to capture screenshot for ${project.symbol}:`, error);
         }
-      } catch (error) {
-        console.error(`Failed to capture screenshot for ${project.symbol}:`, error);
       }
-
-      currentIndex++;
-
-      // Wait 2 seconds before capturing next screenshot
-      if (currentIndex < projectsNeedingScreenshots.length) {
-        setTimeout(captureNext, 2000);
-      }
-    };
-
-    // Start capturing after 2 seconds (after page has loaded)
-    const timeoutId = setTimeout(captureNext, 2000);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [projects, loading]);
+    });
+  }, [projects]);
 
   // Handle search with debounce
   useEffect(() => {
@@ -238,7 +202,6 @@ export default function HomePage() {
       (prevFilters.tokenType !== filters.tokenType ||
         JSON.stringify(prevFilters.websiteTiers) !== JSON.stringify(filters.websiteTiers) ||
         JSON.stringify(prevFilters.whitepaperTiers) !== JSON.stringify(filters.whitepaperTiers) ||
-        JSON.stringify(prevFilters.xTiers) !== JSON.stringify(filters.xTiers) ||
         prevFilters.maxAge !== filters.maxAge ||
         prevFilters.maxMcap !== filters.maxMcap)
     ) {
@@ -247,10 +210,10 @@ export default function HomePage() {
     filtersRef.current = filters;
   }, [filters]);
 
-  // Refetch when filters, sort, viewMode, or hideDismissed changes
+  // Refetch when filters, sort, or hideDismissed changes
   useEffect(() => {
     fetchProjects(1, true);
-  }, [filters, sortColumn, sortDirection, viewMode, hideDismissed]);
+  }, [filters, sortColumn, sortDirection, hideDismissed]);
 
   async function fetchProjects(pageNum: number, reset: boolean = false) {
     try {
@@ -264,7 +227,7 @@ export default function HomePage() {
       // Build query params
       const params = new URLSearchParams({
         page: pageNum.toString(),
-        limit: '30',  // Reduced from 50 for faster initial load
+        limit: '50',
         sortBy: sortColumn,
         sortOrder: sortDirection,
         includeUnverified: 'true'
@@ -281,13 +244,8 @@ export default function HomePage() {
         params.append('hideDismissed', 'true');
       }
 
-      // Add gem mode (overrides manual filters)
-      if (viewMode === 'gem') {
-        params.append('gemMode', 'true');
-      }
-
-      // Add filters (only when NOT searching AND NOT in gem mode - search and gem mode override filters)
-      if (!hasSearch && viewMode !== 'gem') {
+      // Add filters (only when NOT searching - search overrides all filters)
+      if (!hasSearch) {
         if (filters.tokenType !== 'all') {
           params.append('tokenType', filters.tokenType);
         }
@@ -298,14 +256,6 @@ export default function HomePage() {
 
         if (filters.whitepaperTiers.length > 0) {
           params.append('whitepaperTiers', filters.whitepaperTiers.join(','));
-        }
-
-        if (filters.xTiers.length > 0) {
-          params.append('xTiers', filters.xTiers.join(','));
-        }
-
-        if (filters.bittensorOnly) {
-          params.append('network', 'bittensor');
         }
 
         if (filters.maxAge) {
@@ -387,7 +337,7 @@ export default function HomePage() {
     }
   }
 
-  async function handleAnalyzeTwitter(projectId: number, symbol: string, twitterUrl: string) {
+  async function handleAnalyzeTwitter(symbol: string, twitterUrl: string) {
     try {
       // Extract handle from Twitter URL
       const handle = twitterUrl.split('/').pop() || '';
@@ -395,7 +345,7 @@ export default function HomePage() {
       const response = await fetch('/api/analyze-twitter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, symbol, handle })
+        body: JSON.stringify({ symbol, handle })
       });
 
       const json = await response.json();
@@ -476,7 +426,7 @@ export default function HomePage() {
       setSortDirection('desc');
     }
     setHotPicksActive(false);
-    // Keep view mode active when sorting (e.g., sort gems by volume/gains)
+    setViewMode(null); // Deactivate view mode when manually sorting
   }
 
   function applyViewMode(mode: ViewMode) {
@@ -484,8 +434,14 @@ export default function HomePage() {
     setShowViewModeDropdown(false);
 
     if (mode === 'gem') {
-      // Gem mode: Magic preset - ALPHA in anything (website/whitepaper/X), age ≤5y, sort by youngest
-      // NOTE: Filter logic handled in API via gemMode=true parameter, not by setting filter UI
+      // Gem mode: age ≤5y, whitepaper ALPHA, sort by youngest
+      setFilters({
+        tokenType: 'all',
+        websiteTiers: [],
+        whitepaperTiers: ['ALPHA'],
+        maxAge: '5',
+        maxMcap: ''
+      });
       setSortColumn('project_age_years');
       setSortDirection('asc');
     } else if (mode === 'latest') {
@@ -494,10 +450,8 @@ export default function HomePage() {
         tokenType: 'all',
         websiteTiers: [],
         whitepaperTiers: [],
-        xTiers: [],
         maxAge: '',
-        maxMcap: '',
-        bittensorOnly: false
+        maxMcap: ''
       });
       setSortColumn('created_at');
       setSortDirection('desc');
@@ -507,10 +461,8 @@ export default function HomePage() {
         tokenType: 'all',
         websiteTiers: [],
         whitepaperTiers: [],
-        xTiers: [],
         maxAge: '',
-        maxMcap: '',
-        bittensorOnly: false
+        maxMcap: ''
       });
       setSortColumn('current_market_cap');
       setSortDirection('desc');
@@ -563,8 +515,6 @@ export default function HomePage() {
     if (filters.tokenType !== 'all') count++;
     if (filters.websiteTiers.length > 0) count++;
     if (filters.whitepaperTiers.length > 0) count++;
-    if (filters.xTiers.length > 0) count++;
-    if (filters.bittensorOnly) count++;
     if (filters.maxAge) count++;
     if (filters.maxMcap) count++;
     return count;
@@ -628,21 +578,13 @@ export default function HomePage() {
     }
   }
 
-  function isNewToken(created_at: string | undefined): boolean {
-    if (!created_at) return false;
-    const createdDate = new Date(created_at);
-    const now = new Date();
-    const hoursDiff = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60);
-    return hoursDiff <= 24;
-  }
-
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
         <div className="flex justify-between items-center px-5 py-4">
           <div className="text-xl font-extrabold">
-            <span className="text-emerald-500">Ai</span>CoinSignals
+            Coin<span className="text-emerald-500">Ai</span>Rank
           </div>
           <div className="flex gap-3 items-center">
             <RankSearchInput onSearch={setSearchQuery} placeholder="Search symbol or name..." />
@@ -700,80 +642,6 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Sort Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                <ArrowUpDown className="w-5 h-5 text-gray-600" />
-              </button>
-
-              {/* Sort Dropdown Menu */}
-              {showSortDropdown && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setShowSortDropdown(false)} />
-                  <div className="absolute top-12 right-0 z-40 bg-white border border-gray-200 rounded-lg shadow-lg w-44">
-                    <button
-                      onClick={() => {
-                        handleSort('created_at');
-                        setShowSortDropdown(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
-                        sortColumn === 'created_at' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
-                      }`}
-                    >
-                      Latest Added
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleSort('current_market_cap');
-                        setShowSortDropdown(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
-                        sortColumn === 'current_market_cap' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
-                      }`}
-                    >
-                      Market Cap
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleSort('total_volume');
-                        setShowSortDropdown(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
-                        sortColumn === 'total_volume' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
-                      }`}
-                    >
-                      Volume
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleSort('price_change_percentage_24h');
-                        setShowSortDropdown(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
-                        sortColumn === 'price_change_percentage_24h' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
-                      }`}
-                    >
-                      24h Change
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleSort('project_age_years');
-                        setShowSortDropdown(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm ${
-                        sortColumn === 'project_age_years' ? 'text-emerald-600 font-semibold' : 'text-gray-900'
-                      }`}
-                    >
-                      Age
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 relative"
@@ -804,11 +672,23 @@ export default function HomePage() {
                   setShowMenu(false);
                   setShowAddTokenModal(true);
                 }}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-900"
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-900 border-b border-gray-100"
               >
                 <Plus className="w-4 h-4" />
                 Submit Project
               </button>
+              <label
+                className="w-full px-4 py-3 flex items-center gap-2 text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="checkbox"
+                  checked={hideDismissed}
+                  onChange={(e) => setHideDismissed(e.target.checked)}
+                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                />
+                <span className="text-sm font-medium">Hide dismissed</span>
+              </label>
             </div>
           </>
         )}
@@ -828,10 +708,8 @@ export default function HomePage() {
                     tokenType: 'all',
                     websiteTiers: [],
                     whitepaperTiers: [],
-                    xTiers: [],
                     maxAge: '',
-                    maxMcap: '',
-                    bittensorOnly: false
+                    maxMcap: ''
                   });
                 }}
                 className="text-xs text-emerald-500 font-semibold uppercase tracking-wide"
@@ -941,46 +819,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* X Tier */}
-            <div className="mb-6">
-              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">X Tier</div>
-              <div className="flex flex-col gap-2">
-                {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
-                  <button
-                    key={tier}
-                    onClick={() => {
-                      setFilters(prev => ({
-                        ...prev,
-                        xTiers: prev.xTiers.includes(tier)
-                          ? prev.xTiers.filter(t => t !== tier)
-                          : [...prev.xTiers, tier]
-                      }));
-                    }}
-                    className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                      filters.xTiers.includes(tier)
-                        ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                        : 'bg-white text-gray-600 border-2 border-transparent hover:bg-gray-100'
-                    }`}
-                  >
-                    {tier}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Bittensor Subnets Filter */}
-            <div className="mb-6">
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3.5 py-2 rounded-lg transition-colors">
-                <input
-                  type="checkbox"
-                  checked={filters.bittensorOnly}
-                  onChange={(e) => setFilters(prev => ({ ...prev, bittensorOnly: e.target.checked }))}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
-                />
-                <span className="text-sm font-semibold text-gray-700">Bittensor Subnets Only</span>
-              </label>
-            </div>
-
             {/* Max Age and Max MCap */}
             <div className="space-y-4">
               <div>
@@ -1007,40 +845,28 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Mobile Filter Modal Overlay */}
-        {showFilters && (
-          <>
-            <div className="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden" onClick={() => setShowFilters(false)} />
-            <div className="fixed inset-x-0 top-0 bottom-0 z-50 md:hidden bg-white overflow-y-auto">
-              <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-5 py-4 flex justify-between items-center">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Mobile Filter Panel (top dropdown) */}
+          {showFilters && (
+            <div className="md:hidden bg-white border-b border-gray-200 px-5 py-5">
+              <div className="flex justify-between items-center mb-4">
                 <h3 className="text-base font-bold text-gray-900">Filters</h3>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => {
-                      setFilters({
-                        tokenType: 'all',
-                        websiteTiers: [],
-                        whitepaperTiers: [],
-                        xTiers: [],
-                        maxAge: '',
-                        maxMcap: '',
-                        bittensorOnly: false
-                      });
-                    }}
-                    className="text-sm text-emerald-500 font-semibold"
-                  >
-                    Reset
-                  </button>
-                  <button
-                    onClick={() => setShowFilters(false)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <X className="w-5 h-5 text-gray-600" />
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    setFilters({
+                      tokenType: 'all',
+                      websiteTiers: [],
+                      whitepaperTiers: [],
+                      maxAge: '',
+                      maxMcap: ''
+                    });
+                  }}
+                  className="text-sm text-emerald-500 font-semibold"
+                >
+                  Reset
+                </button>
               </div>
-
-              <div className="px-5 py-5">
 
               {/* Token Type */}
               <div className="mb-4">
@@ -1143,46 +969,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* X Tier */}
-              <div className="mb-4">
-                <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">X Tier</div>
-                <div className="flex gap-2 flex-wrap">
-                  {['ALPHA', 'SOLID', 'BASIC'].map(tier => (
-                    <button
-                      key={tier}
-                      onClick={() => {
-                        setFilters(prev => ({
-                          ...prev,
-                          xTiers: prev.xTiers.includes(tier)
-                            ? prev.xTiers.filter(t => t !== tier)
-                            : [...prev.xTiers, tier]
-                        }));
-                      }}
-                      className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                        filters.xTiers.includes(tier)
-                          ? 'bg-emerald-50 text-emerald-500 border-2 border-emerald-500'
-                          : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                      }`}
-                    >
-                      {tier}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bittensor Subnets Filter */}
-              <div className="mb-4">
-                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3.5 py-2 rounded-lg transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={filters.bittensorOnly}
-                    onChange={(e) => setFilters(prev => ({ ...prev, bittensorOnly: e.target.checked }))}
-                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
-                  />
-                  <span className="text-sm font-semibold text-gray-700">Bittensor Subnets Only</span>
-                </label>
-              </div>
-
               {/* Max Age and Max MCap */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1207,16 +993,14 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            </div>
-          </>
-        )}
+          )}
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             {/* List Header - Desktop Only */}
-            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="sticky top-0 z-10 hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-3.5 bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <div className="text-center">★</div>
+              <div className="text-center">✕</div>
               <div onClick={() => handleSort('name')} className="cursor-pointer flex items-center gap-1">
                 Project {sortColumn === 'name' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
@@ -1227,17 +1011,11 @@ export default function HomePage() {
               <div onClick={() => handleSort('current_market_cap')} className="cursor-pointer flex items-center gap-1">
                 MCap {!hotPicksActive && sortColumn === 'current_market_cap' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
               </div>
-              <div onClick={() => handleSort('total_volume')} className="cursor-pointer flex items-center gap-1 justify-center">
-                Vol {sortColumn === 'total_volume' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
-              </div>
-              <div onClick={() => handleSort('price_change_percentage_24h')} className="cursor-pointer flex items-center gap-1 justify-center">
-                24h {sortColumn === 'price_change_percentage_24h' && <span className="text-emerald-500">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
-              </div>
               <div className="text-center">Web</div>
               <div className="text-center">WP</div>
               <div className="text-center">X</div>
               <div className="text-center">Err</div>
-              <div className="text-center">Research</div>
+              <div className="text-center"></div>
             </div>
 
             {/* Projects List */}
@@ -1254,20 +1032,46 @@ export default function HomePage() {
           {sortedProjects.map((project) => (
             <React.Fragment key={project.symbol}>
               {/* Desktop Table Row */}
-              <div className="hidden md:grid grid-cols-[2fr_0.3fr_0.8fr_1fr_0.8fr_0.7fr_0.7fr_0.7fr_0.5fr_0.4fr_0.3fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
+              <div className="hidden md:grid grid-cols-[0.4fr_0.4fr_2fr_0.3fr_0.8fr_1fr_0.7fr_0.7fr_0.5fr_0.3fr_0.5fr] gap-2 px-5 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors"
             >
+              <div className="flex justify-center">
+                <input
+                  type="checkbox"
+                  checked={project.is_featured || project.maybe_featured || false}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    toggleFeatured(project.id);
+                  }}
+                  className={`w-4 h-4 rounded focus:ring-2 cursor-pointer transition-colors ${
+                    project.is_featured
+                      ? 'accent-emerald-600 focus:ring-emerald-500'
+                      : project.maybe_featured
+                      ? 'accent-orange-500 focus:ring-orange-400'
+                      : 'accent-gray-300 focus:ring-gray-400'
+                  }`}
+                  title={
+                    project.is_featured
+                      ? 'Featured (shows on public page)'
+                      : project.maybe_featured
+                      ? 'Maybe (review later)'
+                      : 'Not reviewed'
+                  }
+                />
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleDismissed(project.id, true);
+                  }}
+                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
+                  title="Dismiss project"
+                >
+                  <X className="w-4 h-4" strokeWidth={2.5} />
+                </button>
+              </div>
               <div>
                 <div className="flex items-center gap-2">
-                  {project.image_url && (
-                    <img
-                      src={project.image_url}
-                      alt={project.symbol}
-                      className="w-6 h-6 rounded-full"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
                   <div
                     className="font-bold text-base cursor-pointer hover:text-emerald-600 transition-colors"
                     onClick={() => router.push(`/${project.symbol}`)}
@@ -1299,11 +1103,6 @@ export default function HomePage() {
                       </div>
                     );
                   })()}
-                  {isNewToken(project.created_at) && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-400 text-black" style={{ boxShadow: '0 0 10px rgba(0, 255, 136, 0.5)' }}>
-                      New
-                    </span>
-                  )}
                 </div>
                 <div className="text-sm text-gray-400">{project.name}</div>
               </div>
@@ -1339,14 +1138,6 @@ export default function HomePage() {
                     {formatMcap(project.current_market_cap)}
                   </div>
                 )}
-              </div>
-              <div className="text-sm text-gray-600 font-medium text-center">
-                {formatVolume(project.total_volume)}
-              </div>
-              <div className="text-sm font-medium text-center">
-                <span className={formatPriceChange(project.price_change_percentage_24h).colorClass}>
-                  {formatPriceChange(project.price_change_percentage_24h).text}
-                </span>
               </div>
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                 {project.website_stage1_tier ? (
@@ -1501,44 +1292,85 @@ export default function HomePage() {
                   </div>
                 ) : null}
               </div>
-
-              {/* Research Badge */}
               <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                {project.deep_research_md ? (
-                  <button
-                    onClick={() => {
-                      setSelectedProject({
-                        symbol: project.symbol,
-                        name: project.name,
-                        research: project.deep_research_md
-                      });
-                      setShowResearchModal(true);
-                    }}
-                    className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors flex items-center gap-1 cursor-pointer"
-                    title="Click to view research"
-                  >
-                    <FileSearch className="w-3 h-3" />
-                    View
-                  </button>
-                ) : null}
+                <ProjectActionMenu
+                  projectSymbol={project.symbol}
+                  projectName={project.name}
+                  hasWhitepaper={!!project.whitepaper_tier}
+                  twitterUrl={project.twitter_url}
+                  onAddWhitepaper={() => {
+                    setSelectedProject({ symbol: project.symbol, name: project.name });
+                    setShowAddWhitepaperModal(true);
+                  }}
+                  onAnalyzeTwitter={
+                    project.twitter_url
+                      ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
+                      : undefined
+                  }
+                />
               </div>
             </div>
 
             {/* Mobile Card */}
-            <div className="block md:hidden p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors overflow-hidden">
+            <div className="block md:hidden p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              {/* Card Header with Star, X button, and Action Menu */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={project.is_featured || project.maybe_featured || false}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleFeatured(project.id);
+                    }}
+                    className={`w-5 h-5 rounded focus:ring-2 cursor-pointer transition-colors ${
+                      project.is_featured
+                        ? 'accent-emerald-600 focus:ring-emerald-500'
+                        : project.maybe_featured
+                        ? 'accent-orange-500 focus:ring-orange-400'
+                        : 'accent-gray-300 focus:ring-gray-400'
+                    }`}
+                    title={
+                      project.is_featured
+                        ? 'Featured (shows on public page)'
+                        : project.maybe_featured
+                        ? 'Maybe (review later)'
+                        : 'Not reviewed'
+                    }
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDismissed(project.id, true);
+                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
+                    title="Dismiss project"
+                  >
+                    <X className="w-5 h-5" strokeWidth={2.5} />
+                  </button>
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ProjectActionMenu
+                    projectSymbol={project.symbol}
+                    projectName={project.name}
+                    hasWhitepaper={!!project.whitepaper_tier}
+                    twitterUrl={project.twitter_url}
+                    onAddWhitepaper={() => {
+                      setSelectedProject({ symbol: project.symbol, name: project.name });
+                      setShowAddWhitepaperModal(true);
+                    }}
+                    onAnalyzeTwitter={
+                      project.twitter_url
+                        ? () => handleAnalyzeTwitter(project.symbol, project.twitter_url!)
+                        : undefined
+                    }
+                  />
+                </div>
+              </div>
+
               {/* Project Info */}
-              <div className="mb-3 min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0">
-                  {project.image_url && (
-                    <img
-                      src={project.image_url}
-                      alt={project.symbol}
-                      className="w-7 h-7 rounded-full flex-shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+              <div className="mb-3">
+                <div className="flex items-center gap-2 mb-1">
                   <div
                     className="text-lg font-bold cursor-pointer hover:text-emerald-600 transition-colors"
                     onClick={() => router.push(`/${project.symbol}`)}
@@ -1570,11 +1402,6 @@ export default function HomePage() {
                       </div>
                     );
                   })()}
-                  {isNewToken(project.created_at) && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-400 text-black" style={{ boxShadow: '0 0 10px rgba(0, 255, 136, 0.5)' }}>
-                      New
-                    </span>
-                  )}
                   <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     {project.website_url && (
                       <div className="text-gray-300 hover:text-emerald-600 transition-colors">
@@ -1614,11 +1441,13 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Tiers - Always show all 3 */}
+              {/* Tiers */}
               <div className="flex flex-wrap gap-2 items-center">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Tiers:</div>
+
                 {/* Website Tier */}
-                <div onClick={(e) => e.stopPropagation()}>
-                  {project.website_stage1_tier ? (
+                {project.website_stage1_tier ? (
+                  <div onClick={(e) => e.stopPropagation()}>
                     <SignalBasedTooltip
                       projectSymbol={project.symbol}
                       signals={project.website_stage1_analysis?.signals_found}
@@ -1632,19 +1461,15 @@ export default function HomePage() {
                         project.website_stage1_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
                         'bg-gray-100 text-gray-600'
                       }`}>
-                        Web: {project.website_stage1_tier}
+                        W:{project.website_stage1_tier}
                       </span>
                     </SignalBasedTooltip>
-                  ) : (
-                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-300 opacity-50">
-                      Web: N/A
-                    </span>
-                  )}
-                </div>
+                  </div>
+                ) : null}
 
                 {/* Whitepaper Tier */}
-                <div onClick={(e) => e.stopPropagation()}>
-                  {project.whitepaper_tier ? (
+                {project.whitepaper_tier ? (
+                  <div onClick={(e) => e.stopPropagation()}>
                     <WhitepaperTooltip
                       projectSymbol={project.symbol}
                       whitepaperTier={project.whitepaper_tier}
@@ -1658,19 +1483,15 @@ export default function HomePage() {
                         project.whitepaper_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
                         'bg-gray-100 text-gray-600'
                       }`}>
-                        Paper: {project.whitepaper_tier}
+                        P:{project.whitepaper_tier}
                       </span>
                     </WhitepaperTooltip>
-                  ) : (
-                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-300 opacity-50">
-                      Paper: N/A
-                    </span>
-                  )}
-                </div>
+                  </div>
+                ) : null}
 
-                {/* X/Twitter Tier */}
-                <div onClick={(e) => e.stopPropagation()}>
-                  {project.x_tier && project.x_signals_found && project.x_signals_found.length > 0 ? (
+                {/* X Tier */}
+                {project.x_tier && project.x_signals_found && project.x_signals_found.length > 0 ? (
+                  <div onClick={(e) => e.stopPropagation()}>
                     <XSignalTooltip
                       signals={project.x_signals_found}
                       tier={project.x_tier}
@@ -1683,35 +1504,11 @@ export default function HomePage() {
                         project.x_tier === 'BASIC' ? 'bg-orange-50 text-orange-600' :
                         'bg-gray-100 text-gray-600'
                       }`}>
-                        X: {project.x_tier}
+                        X:{project.x_tier}
                       </span>
                     </XSignalTooltip>
-                  ) : (
-                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-300 opacity-50">
-                      X: N/A
-                    </span>
-                  )}
-                </div>
-
-                {/* Research Badge - Mobile */}
-                {project.deep_research_md && (
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => {
-                        setSelectedProject({
-                          symbol: project.symbol,
-                          name: project.name,
-                          research: project.deep_research_md
-                        });
-                        setShowResearchModal(true);
-                      }}
-                      className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors flex items-center gap-1"
-                    >
-                      <FileSearch className="w-3 h-3" />
-                      Research
-                    </button>
                   </div>
-                )}
+                ) : null}
 
                 {/* Error Indicator */}
                 {project.analysis_errors && Object.keys(project.analysis_errors).length > 0 ? (
@@ -1780,23 +1577,6 @@ export default function HomePage() {
           projectName={selectedProject.name}
           onClose={() => {
             setShowAddWhitepaperModal(false);
-            setSelectedProject(null);
-          }}
-          onSuccess={() => {
-            fetchProjects(1, true);
-          }}
-        />
-      )}
-
-      {/* Research Modal */}
-      {selectedProject && (
-        <ResearchModal
-          isOpen={showResearchModal}
-          projectSymbol={selectedProject.symbol}
-          projectName={selectedProject.name}
-          existingResearch={selectedProject.research}
-          onClose={() => {
-            setShowResearchModal(false);
             setSelectedProject(null);
           }}
           onSuccess={() => {
