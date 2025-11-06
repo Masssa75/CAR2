@@ -1300,8 +1300,8 @@ export default function HomePage() {
                     );
                   })()}
                   {isNewToken(project.created_at) && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-400 text-black" style={{ boxShadow: '0 0 10px rgba(0, 255, 136, 0.5)' }}>
-                      New
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-600">
+                      NEW
                     </span>
                   )}
                 </div>
@@ -1571,8 +1571,8 @@ export default function HomePage() {
                     );
                   })()}
                   {isNewToken(project.created_at) && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-400 text-black" style={{ boxShadow: '0 0 10px rgba(0, 255, 136, 0.5)' }}>
-                      New
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-600">
+                      NEW
                     </span>
                   )}
                   <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
