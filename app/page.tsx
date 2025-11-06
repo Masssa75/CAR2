@@ -587,7 +587,7 @@ export default function HomePage() {
     return `${years.toFixed(1)}y`;
   }
 
-  function formatDualAge(primaryAge: number | null, dexAge: number | null, ageSource: string | null): JSX.Element {
+  function formatDualAge(primaryAge: number | null, dexAge: number | null, ageSource: string | null) {
     const hasBothAges = primaryAge !== null && dexAge !== null;
     const agesDiffer = hasBothAges && Math.abs(primaryAge - dexAge) > 1.0; // Significant if >1 year difference
 
