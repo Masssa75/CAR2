@@ -592,7 +592,12 @@ export default function HomePage() {
 
     // If no DEX age or ages are identical, show single age
     if (!hasBothAges || primaryAge === dexAge) {
-      return <span className="text-sm text-gray-600 font-medium">{formatAge(primaryAge)}</span>;
+      const isVeryNew = primaryAge !== null && primaryAge <= 0.1;
+      return (
+        <span className={`text-sm font-medium ${isVeryNew ? 'text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded' : 'text-gray-600'}`}>
+          {formatAge(primaryAge)}
+        </span>
+      );
     }
 
     // Show both ages with source labels
@@ -600,15 +605,22 @@ export default function HomePage() {
                        ageSource === 'cmc_launch' ? 'CMC' :
                        ageSource === 'cmc_added' ? 'CMC' : '';
 
+    const isPrimaryVeryNew = primaryAge !== null && primaryAge <= 0.1;
+    const isDexVeryNew = dexAge !== null && dexAge <= 0.1;
+
     return (
       <div className="flex flex-col items-start gap-0.5">
         <div className="flex items-center gap-1">
           <span className="text-xs text-gray-500 font-medium">{sourceLabel}</span>
-          <span className="text-sm text-gray-600 font-bold">{formatAge(primaryAge)}</span>
+          <span className={`text-sm font-medium ${isPrimaryVeryNew ? 'text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded' : 'text-gray-600'}`}>
+            {formatAge(primaryAge)}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           <span className="text-xs text-gray-500 font-medium">DEX</span>
-          <span className="text-sm text-gray-600 font-medium">{formatAge(dexAge)}</span>
+          <span className={`text-sm font-medium ${isDexVeryNew ? 'text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded' : 'text-gray-600'}`}>
+            {formatAge(dexAge)}
+          </span>
         </div>
       </div>
     );
