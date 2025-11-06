@@ -589,14 +589,13 @@ export default function HomePage() {
 
   function formatDualAge(primaryAge: number | null, dexAge: number | null, ageSource: string | null) {
     const hasBothAges = primaryAge !== null && dexAge !== null;
-    const agesDiffer = hasBothAges && Math.abs(primaryAge - dexAge) > 1.0; // Significant if >1 year difference
 
     // If no DEX age or ages are identical, show single age
     if (!hasBothAges || primaryAge === dexAge) {
       return <span className="text-sm text-gray-600 font-medium">{formatAge(primaryAge)}</span>;
     }
 
-    // Show both ages with source labels and warning if different
+    // Show both ages with source labels
     const sourceLabel = ageSource === 'genesis' ? 'CG' :
                        ageSource === 'cmc_launch' ? 'CMC' :
                        ageSource === 'cmc_added' ? 'CMC' : '';
@@ -606,7 +605,6 @@ export default function HomePage() {
         <div className="flex items-center gap-1">
           <span className="text-xs text-gray-500 font-medium">{sourceLabel}</span>
           <span className="text-sm text-gray-600 font-bold">{formatAge(primaryAge)}</span>
-          {agesDiffer && <span className="text-amber-500 text-xs" title="Age sources disagree">⚠️</span>}
         </div>
         <div className="flex items-center gap-1">
           <span className="text-xs text-gray-500 font-medium">DEX</span>
