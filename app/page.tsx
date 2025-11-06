@@ -48,6 +48,8 @@ interface Project {
   symbol: string;
   name: string;
   project_age_years: number | null;
+  dex_age_years: number | null;
+  age_source: string | null;
   current_market_cap: number | null;
   total_volume: number | null;
   price_change_percentage_24h: number | null;
@@ -583,6 +585,35 @@ export default function HomePage() {
   function formatAge(years: number | null): string {
     if (years === null || years === undefined) return '—';
     return `${years.toFixed(1)}y`;
+  }
+
+  function formatDualAge(primaryAge: number | null, dexAge: number | null, ageSource: string | null): JSX.Element {
+    const hasBothAges = primaryAge !== null && dexAge !== null;
+    const agesDiffer = hasBothAges && Math.abs(primaryAge - dexAge) > 1.0; // Significant if >1 year difference
+
+    // If no DEX age or ages are identical, show single age
+    if (!hasBothAges || primaryAge === dexAge) {
+      return <span className="text-sm text-gray-600 font-medium">{formatAge(primaryAge)}</span>;
+    }
+
+    // Show both ages with source labels and warning if different
+    const sourceLabel = ageSource === 'genesis' ? 'CG' :
+                       ageSource === 'cmc_launch' ? 'CMC' :
+                       ageSource === 'cmc_added' ? 'CMC' : '';
+
+    return (
+      <div className="flex flex-col items-start gap-0.5">
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-gray-500 font-medium">{sourceLabel}</span>
+          <span className="text-sm text-gray-600 font-bold">{formatAge(primaryAge)}</span>
+          {agesDiffer && <span className="text-amber-500 text-xs" title="Age sources disagree">⚠️</span>}
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-gray-500 font-medium">DEX</span>
+          <span className="text-sm text-gray-600 font-medium">{formatAge(dexAge)}</span>
+        </div>
+      </div>
+    );
   }
 
   function formatMcap(mcap: number | null): string {
@@ -1323,7 +1354,7 @@ export default function HomePage() {
                   network={project.network}
                 />
               </div>
-              <div className="text-sm text-gray-600 font-medium">{formatAge(project.project_age_years)}</div>
+              <div>{formatDualAge(project.project_age_years, project.dex_age_years, project.age_source)}</div>
               <div>
                 {project.coingecko_id ? (
                   <MarketCapTooltip
@@ -1597,8 +1628,8 @@ export default function HomePage() {
 
               {/* Meta Info */}
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600 mb-3">
-                <div>
-                  <span className="text-gray-400">Age:</span> {formatAge(project.project_age_years)}
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400">Age:</span> {formatDualAge(project.project_age_years, project.dex_age_years, project.age_source)}
                 </div>
                 <div>
                   <span className="text-gray-400">MCap:</span> {formatMcap(project.current_market_cap)}
