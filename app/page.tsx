@@ -683,7 +683,7 @@ export default function HomePage() {
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
         <div className="flex justify-between items-center px-5 py-4">
           <div className="text-xl font-extrabold">
-            <span className="text-emerald-500">Ai</span>CoinSignals
+            Coin<span className="text-emerald-500">Ai</span>Rank
           </div>
           <div className="flex gap-3 items-center">
             <RankSearchInput onSearch={setSearchQuery} placeholder="Search symbol or name..." />

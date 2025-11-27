@@ -15,10 +15,10 @@ const nextConfig: NextConfig = {
         has: [
           {
             type: 'host',
-            value: 'coinairank.com',
+            value: 'aicoinsignals.com',
           },
         ],
-        destination: 'https://aicoinsignals.com/:path*',
+        destination: 'https://coinairank.com/:path*',
         permanent: true,
       },
       {
@@ -26,10 +26,10 @@ const nextConfig: NextConfig = {
         has: [
           {
             type: 'host',
-            value: 'www.coinairank.com',
+            value: 'www.aicoinsignals.com',
           },
         ],
-        destination: 'https://aicoinsignals.com/:path*',
+        destination: 'https://coinairank.com/:path*',
         permanent: true,
       },
     ];
